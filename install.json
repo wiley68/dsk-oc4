@@ -1,0 +1,11 @@
+{
+  "name": "DSK Credit покупки на Кредит",
+  "code": "mt_dskapi_credit",
+  "version": "1.2.0",
+  "author": "Ilko Ivanov",
+  "link": "https://avalonbg.com",
+  "status": 1,
+  "type": "module",
+  "install": ["admin/controller/module/mt_dskapi_credit::install"],
+  "uninstall": ["admin/controller/module/mt_dskapi_credit::uninstall"]
+}

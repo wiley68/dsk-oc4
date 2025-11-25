@@ -1,0 +1,79 @@
+{{ header }}{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                <button type="submit" form="form-module" data-bs-toggle="tooltip" title="{{ dskapi_button_save }}" class="btn btn-primary">
+                    <i class="fa-solid fa-save"></i>
+                </button>
+                <a href="{{ back }}" data-bs-toggle="tooltip" title="{{ dskapi_button_cancel }}" class="btn btn-light">
+                    <i class="fa-solid fa-reply"></i>
+                </a>
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ol class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li class="breadcrumb-item">
+                        <a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>
+                    </li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <form id="form-module" action="{{ save }}" method="post" data-oc-toggle="ajax">
+            <div class="panel panel-default">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-pencil"></i>
+                        {{dskapi_text_edit}}</div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">{{dskapi_entry_status}}</label>
+                            <div class="col-sm-8">
+                                <div class="form-check form-switch form-switch-lg">
+                                    <input type="hidden" name="module_mt_dskapi_credit_status" value="0"/>
+                                    <input type="checkbox" name="module_mt_dskapi_credit_status" value="1" id="input-status" class="form-check-input" {% if module_mt_dskapi_credit_status %} checked {% endif %}/>
+                                </div>
+                                <div class="text-small">{{dskapi_entry_status_small}}</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">{{dskapi_entry_cid}}</label>
+                            <div class="col-sm-8">
+                                <input type="text" name="module_mt_dskapi_credit_cid" value="{{ module_mt_dskapi_credit_cid }}" id="module_mt_dskapi_credit_cid" class="form-control"/>
+                                <div class="text-small">{{dskapi_entry_cid_small}}</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">{{dskapi_entry_gap}}</label>
+                            <div class="col-sm-8">
+                                <input type="number" min="0" max="999999" step="1" name="module_mt_dskapi_credit_gap" value="{{ module_mt_dskapi_credit_gap }}" id="module_mt_dskapi_credit_gap" class="form-control"/>
+                                <div class="text-small">{{dskapi_entry_gap_small}}</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">{{dskapi_entry_gap_popup}}</label>
+                            <div class="col-sm-8">
+                                <input type="number" min="0" max="999999" step="1" name="module_mt_dskapi_credit_gap_popup" value="{{ module_mt_dskapi_credit_gap_popup }}" id="module_mt_dskapi_credit_gap_popup" class="form-control"/>
+                                <div class="text-small">{{dskapi_entry_gap_popup_small}}</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">{{dskapi_entry_reklama}}</label>
+                            <div class="col-sm-8">
+                                <div class="form-check form-switch form-switch-lg">
+                                    <input type="hidden" name="module_mt_dskapi_credit_reklama" value="0"/>
+                                    <input type="checkbox" name="module_mt_dskapi_credit_reklama" value="1" id="input-reklama" class="form-check-input" {% if module_mt_dskapi_credit_reklama %} checked {% endif %}/>
+                                </div>
+                                <div class="text-small">{{dskapi_entry_reklama_small}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{{ footer }}
