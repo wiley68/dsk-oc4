@@ -1,0 +1,53 @@
+# Игнориране на системни файлове
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Игнориране на IDE специфични файлове
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.phpunit.result.cache
+
+# Игнориране на компилирани файлове
+*.pyc
+*.pyo
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Игнориране на логове и временни файлове
+*.log
+*.tmp
+*.bak
+*.cache
+
+# Игнориране на файлове за управление на зависимости
+node_modules/
+vendor/
+composer.lock
+
+# Игнориране на файлове за кеширане
+cache/
+storage/cache/
+storage/logs/
+storage/modification/
+storage/upload/
+
+# Игнориране на конфигурационни файлове с чувствителна информация
+config.php
+admin/config.php
+
+# Игнориране на качени файлове
+image/cache/
+image/catalog/
+download/
+upload/
+
+# Игнориране на тестови и примерни файлове
+tests/
+examples/
