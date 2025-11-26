@@ -9,7 +9,6 @@ namespace Opencart\Catalog\Controller\Extension\MtDskapiCredit\Payment;
  */
 class Dskapi extends \Opencart\System\Engine\Controller
 {
-    private string $module = 'module_mt_dskapi_credit';
     private string $dskapiLiveUrl = '';
 
     public function __construct(\Opencart\System\Engine\Registry $registry)
@@ -45,7 +44,7 @@ class Dskapi extends \Opencart\System\Engine\Controller
             $this->load->model('checkout/order');
             $this->model_checkout_order->addHistory($this->session->data['order_id'], $this->config->get('payment_dskapi_order_status_id'));
             $json['redirect'] = $this->url->link(
-                'index.php?route=extension/mt_dskapi_credit/module/mt_dskapi_credit.dskapiSend',
+                'index.php?route=extension/mt_dskapi_credit/module/mt_dskapi_credit.index',
                 'order_id=' . $this->session->data['order_id'],
                 true
             );
