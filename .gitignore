@@ -39,7 +39,6 @@ storage/modification/
 storage/upload/
 
 # Игнориране на конфигурационни файлове с чувствителна информация
-config.php
 admin/config.php
 
 # Игнориране на качени файлове

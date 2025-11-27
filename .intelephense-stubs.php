@@ -399,7 +399,7 @@ namespace {
         protected array $attachments = [];
         protected string $parameter = '';
 
-        public function __construct(array $args = []) {}
+        public function __construct(string $engine, array $option = []) {}
         public function setTo(string $to): void {}
         public function setFrom(string $from): void {}
         public function setSender(string $sender): void {}
@@ -410,7 +410,7 @@ namespace {
         public function addAttachment(string $filename): void {}
         public function send(): bool
         {
-            return false;
+            return true;
         }
     }
 
