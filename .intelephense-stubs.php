@@ -385,36 +385,6 @@ namespace {
     }
 
     /**
-     * Mail - Клас за изпращане на имейли
-     */
-    class Mail
-    {
-        protected string $to = '';
-        protected string $from = '';
-        protected string $sender = '';
-        protected string $reply_to = '';
-        protected string $subject = '';
-        protected string $text = '';
-        protected string $html = '';
-        protected array $attachments = [];
-        protected string $parameter = '';
-
-        public function __construct(string $engine, array $option = []) {}
-        public function setTo(string $to): void {}
-        public function setFrom(string $from): void {}
-        public function setSender(string $sender): void {}
-        public function setReplyTo(string $reply_to): void {}
-        public function setSubject(string $subject): void {}
-        public function setText(string $text): void {}
-        public function setHtml(string $html): void {}
-        public function addAttachment(string $filename): void {}
-        public function send(): bool
-        {
-            return true;
-        }
-    }
-
-    /**
      * Cart - Клас за работа с количката
      */
     class Cart
@@ -1062,5 +1032,34 @@ namespace Opencart\System\Engine {
         }
         public function install(string $type, string $code): void {}
         public function uninstall(string $type, string $code): void {}
+    }
+}
+
+namespace Opencart\System\Library {
+    class Mail
+    {
+        protected string $to = '';
+        protected string $from = '';
+        protected string $sender = '';
+        protected string $reply_to = '';
+        protected string $subject = '';
+        protected string $text = '';
+        protected string $html = '';
+        protected array $attachments = [];
+        protected string $parameter = '';
+
+        public function __construct(string $engine, array $option = []) {}
+        public function setTo(string $to): void {}
+        public function setFrom(string $from): void {}
+        public function setSender(string $sender): void {}
+        public function setReplyTo(string $reply_to): void {}
+        public function setSubject(string $subject): void {}
+        public function setText(string $text): void {}
+        public function setHtml(string $html): void {}
+        public function addAttachment(string $filename): void {}
+        public function send(): bool
+        {
+            return true;
+        }
     }
 }

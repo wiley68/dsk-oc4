@@ -29,7 +29,8 @@ class Dskapi extends \Opencart\System\Engine\Controller
         if (isset($this->session->data['order_id'])) {
             $this->load->model('checkout/order');
 
-            $order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
+            $order_id = $this->session->data['order_id'];
+            $order_info = $this->model_checkout_order->getOrder($order_id);
 
             if (!$order_info) {
                 $json['redirect'] = $this->url->link('checkout/failure', 'language=' . $this->config->get('config_language'), true);
@@ -52,12 +53,14 @@ class Dskapi extends \Opencart\System\Engine\Controller
 
             $json['redirect'] = $this->url->link(
                 'extension/mt_dskapi_credit/payment/dskapi_start',
-                'language=' . $this->config->get('config_language'),
+                [
+                    'language' => $this->config->get('config_language'),
+                    'order_id' => $order_id
+                ],
                 true
             );
         }
 
-        $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
     }
 }

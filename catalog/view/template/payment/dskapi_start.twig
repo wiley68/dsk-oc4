@@ -17,9 +17,25 @@
             id="content"
             class="<?php echo $class; ?>"
         >{{ content_top }}
-            <h1>ДСК Кредит</h1>
-            {{ content_bottom }}
-        </div>
+            {% if not success %}
+            {% if comunication == 0 %}
+            Има временен проблем с комуникацията към DSK Credit. Изпратен е мейл с Вашата заявка към Банката. Моля
+            очаквайте обратна връзка от Банката за да продължите процедурата по вашата заявка за кредит.
+            {% else %}
+            Вече има създадена заявка за кредит в системата на DSK Credit с номер на Вашия ордер: {{order_id}}
+            {% endif %}
+            {% else %}
+            Пехвърляне към страницата на DSK Credit
+            {% endif %}
+            {{ content_bottom }}</div>
         {{ column_right }}
     </div>
 </div>
+{% if success %}
+<script type="text/javascript">
+    $(document).ready(function (e) {
+        window.location.href = '{{redirect_url}}';
+    });
+</script>
+{% endif %}
+{{ footer }}
