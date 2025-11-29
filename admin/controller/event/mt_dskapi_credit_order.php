@@ -103,10 +103,21 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
         $this->load->model('extension/mt_dskapi_credit/module/mt_dskapi_credit');
         $statuses = $this->model_extension_mt_dskapi_credit_module_mt_dskapi_credit->getBankStatuses();
 
-        // Добавяме колона "ДСК Банка Статус" след колоната "Статус" в header-а
-        // Търсим последния </th> преди </tr> в header-а
+        // Добавяме колона "ДСК Банка Статус" в header-а между "Status" и "Total" колоните
         $columnHeader = '<th class="text-start">ДСК Банка Статус</th>';
-        $output = preg_replace('/(<\/th>\s*<\/tr>\s*<tbody>)/', '</th>' . $columnHeader . '</tr><tbody>', $output, 1);
+        // Търсим колоната "Status" и добавяме новата колона след нея преди "Total"
+        // От HTML структурата: <th><a href="...">Status</a></th> ... <th class="text-end d-none d-lg-table-cell"><a href="...">Total</a></th>
+        // Pattern търси Status колоната и Total колоната след нея (игнорирайки всичко между тях)
+        // Използваме non-greedy match за да намерим първата Total колона след Status
+        $pattern = '/(<th[^>]*><a[^>]*>Status<\/a><\/th>)(.*?)(<th[^>]*><a[^>]*>Total<\/a><\/th>)/is';
+        $output = preg_replace($pattern, '$1' . $columnHeader . '$3', $output, 1);
+
+        // Ако първият pattern не работи, опитваме се с по-общ pattern който търси Status и Total колоните
+        if (strpos($output, 'ДСК Банка Статус') === false) {
+            // Търсим Status колоната (може да има различни структури) и Total колоната след нея
+            $pattern = '/(<th[^>]*>.*?Status.*?<\/th>)(.*?)(<th[^>]*>.*?Total.*?<\/th>)/is';
+            $output = preg_replace($pattern, '$1' . $columnHeader . '$3', $output, 1);
+        }
 
         // Добавяме данните за всеки ред - търсим редовете в tbody
         // Pattern за намиране на order_id в href
@@ -136,10 +147,17 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
 
                 $statusCell = '<td class="text-start"><span class="' . $statusClass . '">' . $statusText . '</span></td>';
 
-                // Намираме съответния ред и добавяме клетката преди </tr>
-                // Търсим реда който съдържа order_id
-                $pattern = '/(href="[^"]*route=sale\/order\.info[^"]*order_id=' . $order_id . '[^"]*"[^>]*>.*?<\/td>\s*<\/tr>)/s';
-                $output = preg_replace($pattern, '$1' . $statusCell . '</tr>', $output, 1);
+                // Намираме реда който съдържа order_id и добавяме клетката след "Status" клетката преди "Total" клетката
+                // Escape-ваме специалните символи в order_id
+                $escapedOrderId = preg_quote((string)$order_id, '/');
+                // Търсим реда с order_id в Action клетката, намираме Status клетката и Total клетката след нея
+                // Структурата: Order ID -> Store -> Customer -> Status -> Total -> Date Added -> Date Modified -> Action
+                // Status клетката е обикновено <td>Status</td> без класове, след Customer клетката
+                // Търсим целия ред от <tr> до </tr> който завършва с order_id в Action клетката
+                // Намираме Status клетката (която е преди Total клетката) и добавяме новата клетка след нея
+                // Status клетката може да бъде Processing, Pending, Voided, Complete или друг статус
+                $pattern = '/(<tr[^>]*>.*?)(<td>Processing<\/td>|<td>Pending<\/td>|<td>Voided<\/td>|<td>Complete<\/td>|<td>[^<]*<\/td>)(\s*<td class="text-end d-none d-lg-table-cell">.*?order_id=' . $escapedOrderId . '[^>]*>.*?<\/tr>)/s';
+                $output = preg_replace($pattern, '$1$2' . $statusCell . '$3', $output, 1);
             }
         }
     }
