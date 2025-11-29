@@ -269,6 +269,49 @@ function redirectToCheckoutWithDskapi() {
 }
 
 /**
+ * Shows a Bootstrap alert message in the alert container.
+ * @param {string} message - The message to display
+ * @param {string} [type='danger'] - Alert type: 'danger', 'warning', 'success', 'info'
+ */
+function showAlert(message, type = 'danger') {
+    if (!message) {
+        return;
+    }
+
+    const alertContainer = $('#alert');
+    if (alertContainer.length === 0) {
+        // Ако няма alert контейнер, създаваме го в началото на #product
+        const productContainer = $('#product');
+        if (productContainer.length > 0) {
+            productContainer.prepend('<div id="alert"></div>');
+        } else {
+            // Fallback към стандартен alert ако няма подходящ контейнер
+            alert(message);
+            return;
+        }
+    }
+
+    const iconClass = type === 'danger' ? 'fa-solid fa-circle-exclamation' :
+        type === 'warning' ? 'fa-solid fa-triangle-exclamation' :
+            type === 'success' ? 'fa-solid fa-circle-check' :
+                'fa-solid fa-circle-info';
+
+    const alertHtml = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        <i class="${iconClass}"></i> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>`;
+
+    $('#alert').prepend(alertHtml);
+
+    // Автоматично скриване след 5 секунди
+    setTimeout(() => {
+        $('#alert .alert').fadeOut(300, function () {
+            $(this).remove();
+        });
+    }, 5000);
+}
+
+/**
  * Handles cart addition errors and provides feedback.
  * @param {Object} response
  * @param {boolean} [showAlerts=true]
@@ -276,7 +319,7 @@ function redirectToCheckoutWithDskapi() {
 function handleCartErrors(response, showAlerts = true) {
     if (!response || (!response.error && !response.redirect)) {
         if (showAlerts) {
-            alert('Възникна неочаквана грешка. Моля, опитайте отново.');
+            showAlert('Възникна неочаквана грешка. Моля, опитайте отново.');
         }
         return;
     }
@@ -288,10 +331,20 @@ function handleCartErrors(response, showAlerts = true) {
 
     if (response.error && response.error.option && showAlerts) {
         renderOptionErrors(response.error.option);
+        // Показване на алерт с всички грешки за опции
+        const errorMessages = Object.values(response.error.option);
+        if (errorMessages.length > 0) {
+            showAlert(errorMessages.join('<br>'));
+        }
     }
 
     if (response.error && response.error.warning && showAlerts) {
-        alert(response.error.warning);
+        showAlert(response.error.warning, 'warning');
+    }
+
+    // Обработка на общи грешки (string)
+    if (response.error && typeof response.error === 'string' && showAlerts) {
+        showAlert(response.error);
     }
 }
 
@@ -408,7 +461,7 @@ function dskapi_pogasitelni_vnoski_input_change(showAlerts = true) {
             }
 
             if (showAlerts) {
-                alert('Избраният брой погасителни вноски е под минималния.');
+                showAlert('Избраният брой погасителни вноски е под минималния.', 'warning');
             }
             installmentsInput.value = old_vnoski;
             return;
@@ -416,7 +469,7 @@ function dskapi_pogasitelni_vnoski_input_change(showAlerts = true) {
 
         toggleButtonVisibility(false);
         if (showAlerts) {
-            alert('Избраният брой погасителни вноски е над максималния.');
+            showAlert('Избраният брой погасителни вноски е над максималния.', 'warning');
         }
         installmentsInput.value = old_vnoski;
     };
@@ -477,10 +530,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 ) {
                     dskapiProductPopupContainer.style.display = 'block';
                 } else {
-                    alert(
+                    showAlert(
                         'Максимално позволената цена за кредит ' +
                         parseFloat(dskapi_maxstojnost.value).toFixed(2) +
-                        ' е надвишена!'
+                        ' е надвишена!',
+                        'warning'
                     );
                 }
             };
