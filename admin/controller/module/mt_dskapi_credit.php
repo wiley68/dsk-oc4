@@ -17,6 +17,7 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
     private $event_cart_controller = 'extension/mt_dskapi_credit/event/mt_dskapi_credit_cart_controller';
     private $event_cart_view = 'extension/mt_dskapi_credit/event/mt_dskapi_credit_cart_view';
     private $event_checkout = 'extension/mt_dskapi_credit/event/mt_dskapi_credit_checkout';
+    private $event_order = 'extension/mt_dskapi_credit/event/mt_dskapi_credit_order';
 
     public function index(): void
     {
@@ -180,6 +181,48 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
             'sort_order' => 0
         ]);
 
+        // Event hooks за админ панела - добавяне на банков статус в списъка с ордери
+        $this->model_setting_event->deleteEventByCode($this->module . '_admin_order_list');
+        $this->model_setting_event->addEvent([
+            'code' => $this->module . '_admin_order_list',
+            'description' => $this->description . '- добавя банков статус в списъка с ордери в админ панела.',
+            'trigger' => 'admin/controller/sale/order/before',
+            'action' => $this->event_order . $dsk_separator . 'addBankStatusToList',
+            'status' => true,
+            'sort_order' => 0
+        ]);
+
+        $this->model_setting_event->deleteEventByCode($this->module . '_admin_order_list_view');
+        $this->model_setting_event->addEvent([
+            'code' => $this->module . '_admin_order_list_view',
+            'description' => $this->description . '- добавя колона "ДСК Банка Статус" в таблицата с ордери.',
+            'trigger' => 'admin/view/sale/order_list/after',
+            'action' => $this->event_order . $dsk_separator . 'addColumnToList',
+            'status' => true,
+            'sort_order' => 0
+        ]);
+
+        // Event hooks за админ панела - добавяне на банков статус в детайлния преглед на ордер
+        $this->model_setting_event->deleteEventByCode($this->module . '_admin_order_info');
+        $this->model_setting_event->addEvent([
+            'code' => $this->module . '_admin_order_info',
+            'description' => $this->description . '- добавя банков статус в детайлния преглед на ордер в админ панела.',
+            'trigger' => 'admin/controller/sale/order.info/before',
+            'action' => $this->event_order . $dsk_separator . 'addBankStatusToInfo',
+            'status' => true,
+            'sort_order' => 0
+        ]);
+
+        $this->model_setting_event->deleteEventByCode($this->module . '_admin_order_info_view');
+        $this->model_setting_event->addEvent([
+            'code' => $this->module . '_admin_order_info_view',
+            'description' => $this->description . '- добавя поле "ДСК Банка Статус" в детайлния преглед на ордер.',
+            'trigger' => 'admin/view/sale/order_info/after',
+            'action' => $this->event_order . $dsk_separator . 'addFieldToInfo',
+            'status' => true,
+            'sort_order' => 0
+        ]);
+
         $this->load->model('user/user_group');
         $groups = $this->model_user_user_group->getUserGroups();
 
@@ -191,6 +234,8 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
             $this->model_user_user_group->addPermission($group['user_group_id'], 'access', $this->event_checkout);
             // Permissions за новия event hook за запазване на параметъра
             $this->model_user_user_group->addPermission($group['user_group_id'], 'access', $this->event_checkout);
+            // Permissions за event hooks за админ панела
+            $this->model_user_user_group->addPermission($group['user_group_id'], 'access', $this->event_order);
         }
     }
 
@@ -213,8 +258,13 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
             $this->model_setting_event->deleteEventByCode($this->module . '_before_cart_controller');
             $this->model_setting_event->deleteEventByCode($this->module . '_after_cart_view');
             $this->model_setting_event->deleteEventByCode($this->module . '_save_dskapi_param');
+            $this->model_setting_event->deleteEventByCode($this->module . '_save_dskapi_param');
             $this->model_setting_event->deleteEventByCode($this->module . '_before_checkout');
             $this->model_setting_event->deleteEventByCode($this->module . '_after_checkout_view');
+            $this->model_setting_event->deleteEventByCode($this->module . '_admin_order_list');
+            $this->model_setting_event->deleteEventByCode($this->module . '_admin_order_list_view');
+            $this->model_setting_event->deleteEventByCode($this->module . '_admin_order_info');
+            $this->model_setting_event->deleteEventByCode($this->module . '_admin_order_info_view');
         }
 
         $this->load->model('extension/mt_dskapi_credit/module/mt_dskapi_credit');

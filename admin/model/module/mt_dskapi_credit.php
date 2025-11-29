@@ -30,4 +30,42 @@ class MtDskapiCredit extends \Opencart\System\Engine\Model
         $table_dskpayment_orders = \DB_PREFIX . 'dskpayment_orders';
         $this->db->query("DROP TABLE IF EXISTS `$table_dskpayment_orders`;");
     }
+
+    /**
+     * Връща банковия статус за даден ордер
+     *
+     * @param int $order_id
+     * @return array|null
+     */
+    public function getBankStatus(int $order_id): ?array
+    {
+        $table_dskpayment_orders = \DB_PREFIX . 'dskpayment_orders';
+        $query = $this->db->query("SELECT * FROM `$table_dskpayment_orders` WHERE `order_id` = '" . (int)$order_id . "' LIMIT 1");
+
+        if ($query->num_rows) {
+            return $query->row;
+        }
+
+        return null;
+    }
+
+    /**
+     * Връща масива с всички банкови статуси
+     *
+     * @return array
+     */
+    public function getBankStatuses(): array
+    {
+        return [
+            0 => 'Създадена Апликация',
+            1 => 'Избрана финансова схема',
+            2 => 'Попълнена Апликация',
+            3 => 'Изпратен Банка',
+            4 => 'Неуспешен контакт с клиента',
+            5 => 'Анулирана апликация',
+            6 => 'Отказана апликация',
+            7 => 'Подписан договор',
+            8 => 'Усвоен кредит'
+        ];
+    }
 }
