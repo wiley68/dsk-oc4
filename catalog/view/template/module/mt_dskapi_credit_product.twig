@@ -1,0 +1,128 @@
+<!-- DSK Credit API - wiley68 -->
+<script type="text/javascript">
+	window.currencyRates = JSON.parse('{{ currency_rates|e("js") }}');
+</script>
+<div id="dskapi-product-button-container" style="display:none;padding-top:{{ dskapi_gap }}px;">
+	<table class="dskapi_table">
+		<tr>
+			<td class="dskapi_button_table">
+				<div class="dskapi_button_div_txt">
+					{{dskapi_zaglavie}}
+				</div>
+			</td>
+		</tr>
+	</table>
+	<table class="dskapi_table_img">
+		<tr>
+			<td class="dskapi_button_table">
+				{% if dskapi_custom_button_status == 1 %}
+					<img id="btn_dskapi" class="dskapi_btn_click dskapi_logo" src="{{dskapi_button_normal_custom}}" alt="Кредитен калкулатор DSK Credit" onmouseover="this.src='{{dskapi_button_hover_custom}}'" onmouseout="this.src='{{dskapi_button_normal_custom}}'"/>
+				{% else %}
+					<img id="btn_dskapi" class="dskapi_btn_click dskapi_logo" src="{{dskapi_button_normal}}" alt="Кредитен калкулатор DSK Credit" onmouseover="this.src='{{dskapi_button_hover}}'" onmouseout="this.src='{{dskapi_button_normal}}'"/>
+				{% endif %}
+			</td>
+		</tr>
+		{% if dskapi_isvnoska == 1 %}
+			<tr>
+				<td class="dskapi_button_table">
+					<p>
+						<span id="dskapi_vnoski_button">{{dskapi_vnoski}}</span>
+						x
+						<span id="dskapi_vnoska_button">{{dskapi_vnoska}}</span>
+						{{dskapi_sign}}</p>
+				</td>
+			</tr>
+		{% endif %}
+	</table>
+</div>
+<input type="hidden" id="dskapi_price" value="{{dskapi_price}}"/>
+<input type="hidden" id="dskapi_cid" value="{{dskapi_cid}}"/>
+<input type="hidden" id="dskapi_product_id" value="{{dskapi_product_id}}"/>
+<input type="hidden" id="DSKAPI_LIVEURL" value="{{DSKAPI_LIVEURL}}"/>
+<input type="hidden" id="dskapi_button_status" value="{{dskapi_button_status}}"/>
+<input type="hidden" id="dskapi_maxstojnost" value="{{dskapi_maxstojnost}}"/>
+<input type="hidden" id="dskapi_eur" value="{{dskapi_eur}}"/>
+<input type="hidden" id="dskapi_currency_code" value="{{dskapi_currency_code}}"/>
+<div id="dskapi-product-popup-container" class="modalpayment_dskapi" style="padding-top:{{ dskapi_gap_popup }}px !important;">
+	<div class="modalpayment-content_dskapi">
+		<div id="dskapi_body">
+			<div class="{{dskapi_PopUp_Detailed_v1}}">
+				<div class="{{dskapi_Mask}}">
+					<img src="{{dskapi_picture}}" class="dskapi_header">
+					<p class="{{dskapi_product_name}}">Купи на изплащане със стоков кредит от Банка ДСК</p>
+					<div class="{{dskapi_body_panel_txt3}}">
+						<div class="{{dskapi_body_panel_txt3_left}}">
+							<p>
+								•    Улеснена процедура за електронно подписване<br/>
+								•    Атрактивни условия по кредита<br/>
+								•    Параметри изцяло по Ваш избор<br/>
+								•    Одобрение до няколко минути изцяло онлайн
+							</p>
+						</div>
+						<div class="{{dskapi_body_panel_txt3_right}}">
+							<select id="dskapi_pogasitelni_vnoski_input" class="dskapi_txt_right" onchange="dskapi_pogasitelni_vnoski_input_change();" onfocus="dskapi_pogasitelni_vnoski_input_focus(this.value);">
+								{% for i in 3..48 %}
+									{% set vnoska_visible = false %}
+									{% set vnoska_test = ((i-2)*(i-2)) %}
+									{% set vnoska_test_result = dskapi_vnoski_visible and vnoska_test %}
+									{% if vnoska_test_result %}
+										{% set vnoska_visible = true %}
+									{% else %}
+										{% set vnoska_visible = false %}
+										{% if dskapi_vnoski == i %}
+											{% set vnoska_visible = true %}
+										{% endif %}
+									{% endif %}
+									{% if vnoska_visible %}
+										<option value="{{i}}" {% if dskapi_vnoski == i %} selected {% endif %}>{{i}}
+											месеца</option>
+									{% endif %}
+								{% endfor %}
+							</select>
+							<div class="{{dskapi_sumi_panel}}">
+								<div class="{{dskapi_kredit_panel}}">
+									<div class="dskapi_sumi_txt">Размер на кредита /{{dskapi_sign}}/</div>
+									<div>
+										<input class="dskapi_mesecna_price" type="text" id="dskapi_price_txt" readonly="readonly" value="{{dskapi_price}}"/>
+									</div>
+								</div>
+								<div class="{{dskapi_kredit_panel}}">
+									<div class="dskapi_sumi_txt">Месечна вноска /{{dskapi_sign}}/</div>
+									<div>
+										<input class="dskapi_mesecna_price" type="text" id="dskapi_vnoska" readonly="readonly" value="{{dskapi_vnoska}}"/>
+									</div>
+								</div>
+							</div>
+							<div class="{{dskapi_sumi_panel}}">
+								<div class="{{dskapi_kredit_panel}}">
+									<div class="dskapi_sumi_txt">Обща дължима сума /{{dskapi_sign}}/</div>
+									<div>
+										<input class="dskapi_mesecna_price" type="text" id="dskapi_obshtozaplashtane" readonly="readonly" value="{{obshtozaplashtane}}"/>
+									</div>
+								</div>
+								<div class="{{dskapi_kredit_panel}}">
+									<div class="dskapi_sumi_txt">ГПР /%/</div>
+									<div>
+										<input class="dskapi_mesecna_price" type="text" id="dskapi_gpr" readonly="readonly" value="{{dskapi_gpr}}"/>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="{{dskapi_body_panel_txt4}}">
+						Изчисленията са направени при допускането за първа падежна дата след 30 дни и са с насочваща цел. Избери най-подходящата месечна вноска.
+					</div>
+					<div class="{{dskapi_body_panel_footer}}">
+						<div class="dskapi_btn" id="dskapi_buy_credit">Купи на изплащане</div>
+						<div class="dskapi_btn_cancel" id="dskapi_back_credit">Откажи</div>
+						<div class="{{dskapi_body_panel_left}}">
+							<div class="dskapi_txt_footer">Ver.
+								{{DSKAPI_VERSION}}</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- DSK Credit API - wiley68 -->
