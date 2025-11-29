@@ -149,10 +149,21 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
             'sort_order' => 0
         ]);
 
+        // Event hook за запазване на параметъра преди редиректа към логин (за всички страници)
+        $this->model_setting_event->deleteEventByCode($this->module . '_save_dskapi_param');
+        $this->model_setting_event->addEvent([
+            'code' => $this->module . '_save_dskapi_param',
+            'description' => $this->description . '- запазва параметър dskapi=1 в session преди редиректа към логин.',
+            'trigger' => 'catalog/controller/common/header/before',
+            'action' => $this->event_checkout . $dsk_separator . 'saveParam',
+            'status' => true,
+            'sort_order' => 0
+        ]);
+
         $this->model_setting_event->deleteEventByCode($this->module . '_before_checkout');
         $this->model_setting_event->addEvent([
             'code' => $this->module . '_before_checkout',
-            'description' => $this->description . '- запазва параметър dskapi=1 в session при зареждане на checkout страницата.',
+            'description' => $this->description . '- запазва параметър dskapi=1 в session при зареждане на checkout страницата и възстановява параметъра ако липсва.',
             'trigger' => 'catalog/controller/checkout/checkout/before',
             'action' => $this->event_checkout . $dsk_separator . 'init',
             'status' => true,
@@ -178,6 +189,8 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
             $this->model_user_user_group->addPermission($group['user_group_id'], 'access', $this->event_cart_controller);
             $this->model_user_user_group->addPermission($group['user_group_id'], 'access', $this->event_cart_view);
             $this->model_user_user_group->addPermission($group['user_group_id'], 'access', $this->event_checkout);
+            // Permissions за новия event hook за запазване на параметъра
+            $this->model_user_user_group->addPermission($group['user_group_id'], 'access', $this->event_checkout);
         }
     }
 
@@ -199,6 +212,7 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
             $this->model_setting_event->deleteEventByCode($this->module . '_before_product_controller');
             $this->model_setting_event->deleteEventByCode($this->module . '_before_cart_controller');
             $this->model_setting_event->deleteEventByCode($this->module . '_after_cart_view');
+            $this->model_setting_event->deleteEventByCode($this->module . '_save_dskapi_param');
             $this->model_setting_event->deleteEventByCode($this->module . '_before_checkout');
             $this->model_setting_event->deleteEventByCode($this->module . '_after_checkout_view');
         }
