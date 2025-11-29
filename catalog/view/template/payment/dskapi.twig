@@ -11,12 +11,19 @@
 	{% set btn_status = '' %}
 {% endif %}
 {% if dskapi_is_valid %}
-	С избора си да финансирате покупката чрез Банка ДСК Вие декларирате, че сте запознат с Информацията относно
-	обработването на лични данни на физически лица от Банка ДСК АД.
-	<a
-		target="_blank"
-		href="https://dskbank.bg/docs/default-source/gdpr/%D0%B8%D0%BD%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D1%8F-%D0%BE%D1%82%D0%BD%D0%BE%D1%81%D0%BD%D0%BE-%D0%BE%D0%B1%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%B2%D0%B0%D0%BD%D0%B5%D1%82%D0%BE-%D0%BD%D0%B0-%D0%BB%D0%B8%D1%87%D0%BD%D0%B8-%D0%B4%D0%B0%D0%BD%D0%BD%D0%B8-%D0%BD%D0%B0-%D1%84%D0%B8%D0%B7%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8-%D0%BB%D0%B8%D1%86%D0%B0-%D0%BE%D1%82-%D0%B1%D0%B0%D0%BD%D0%BA%D0%B0-%D0%B4%D1%81%D0%BA-%D0%B0%D0%B4-%D0%B8-%D1%81%D1%8A%D0%B3%D0%BB%D0%B0%D1%81%D0%B8%D1%8F-%D0%B7%D0%B0-%D0%BE%D0%B1%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%B2%D0%B0%D0%BD%D0%B5-%D0%BD%D0%B0-%D0%BB%D0%B8%D1%87%D0%BD%D0%B8-%D0%B4%D0%B0%D0%BD%D0%BD%D0%B8.pdf"
-	>Информация относно обработването на лични данни на физически лица от 'Банка ДСК' АД</a>
+	<p>
+		С избора си да финансирате покупката чрез Банка ДСК Вие декларирате, че сте запознат с Информацията относно
+		обработването на лични данни на физически лица от Банка ДСК АД.
+	</p>
+	<p>
+		<a
+			target="_blank"
+			href="https://dskbank.bg/docs/default-source/gdpr/%D0%B8%D0%BD%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D1%8F-%D0%BE%D1%82%D0%BD%D0%BE%D1%81%D0%BD%D0%BE-%D0%BE%D0%B1%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%B2%D0%B0%D0%BD%D0%B5%D1%82%D0%BE-%D0%BD%D0%B0-%D0%BB%D0%B8%D1%87%D0%BD%D0%B8-%D0%B4%D0%B0%D0%BD%D0%BD%D0%B8-%D0%BD%D0%B0-%D1%84%D0%B8%D0%B7%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8-%D0%BB%D0%B8%D1%86%D0%B0-%D0%BE%D1%82-%D0%B1%D0%B0%D0%BD%D0%BA%D0%B0-%D0%B4%D1%81%D0%BA-%D0%B0%D0%B4-%D0%B8-%D1%81%D1%8A%D0%B3%D0%BB%D0%B0%D1%81%D0%B8%D1%8F-%D0%B7%D0%B0-%D0%BE%D0%B1%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%B2%D0%B0%D0%BD%D0%B5-%D0%BD%D0%B0-%D0%BB%D0%B8%D1%87%D0%BD%D0%B8-%D0%B4%D0%B0%D0%BD%D0%BD%D0%B8.pdf"
+		>Информация относно обработването на лични данни на физически лица от 'Банка ДСК' АД</a>
+	</p>
+	<p>
+		<a href="#" id="dskapi-interest-schemes-link">Лихвени схеми</a>
+	</p>
 	<div class="buttons">
 		<div class="pull-right">
 			<input
@@ -59,4 +66,93 @@
 			});
 		});
 	</script>
+	<!-- Скрити полета за JavaScript функционалността -->
+	<input type="hidden" id="dskapi_price_txt_checkout" value="{{dskapi_price}}"/>
+	<input type="hidden" id="dskapi_cid_checkout" value="{{dskapi_cid}}"/>
+	<input type="hidden" id="dskapi_product_id_checkout" value="0"/>
+	<input type="hidden" id="DSKAPI_LIVEURL_checkout" value="{{DSKAPI_LIVEURL}}"/>
+	<input type="hidden" id="dskapi_eur_checkout" value="{{dskapi_eur}}"/>
+	<input type="hidden" id="dskapi_currency_code_checkout" value="{{dskapi_currency_code}}"/>
+	
+	<!-- Попъп прозорец за лихвени схеми -->
+	<div id="dskapi-interest-schemes-popup" class="modalpayment_dskapi" style="display:none;padding-top:{{ dskapi_gap_popup }}px !important;">
+		<div class="modalpayment-content_dskapi">
+			<div id="dskapi_body">
+				<div class="{{dskapi_PopUp_Detailed_v1}}">
+					<div class="{{dskapi_Mask}}">
+						<img src="{{dskapi_picture}}" class="dskapi_header">
+						<p class="{{dskapi_product_name}}">Лихвени схеми за изплащане</p>
+						<div class="{{dskapi_body_panel_txt3}}">
+							<div class="{{dskapi_body_panel_txt3_left}}">
+								<p>
+									•    Улеснена процедура за електронно подписване<br/>
+									•    Атрактивни условия по кредита<br/>
+									•    Параметри изцяло по Ваш избор<br/>
+									•    Одобрение до няколко минути изцяло онлайн
+								</p>
+							</div>
+							<div class="{{dskapi_body_panel_txt3_right}}">
+								<select id="dskapi_pogasitelni_vnoski_input_checkout" class="dskapi_txt_right" onchange="dskapi_pogasitelni_vnoski_input_change_checkout();" onfocus="dskapi_pogasitelni_vnoski_input_focus_checkout(this.value);">
+									{% for i in 3..48 %}
+										{% set vnoska_visible = false %}
+										{% set vnoska_test = ((i-2)*(i-2)) %}
+										{% set vnoska_test_result = dskapi_vnoski_visible and vnoska_test %}
+										{% if vnoska_test_result %}
+											{% set vnoska_visible = true %}
+										{% else %}
+											{% set vnoska_visible = false %}
+											{% if dskapi_vnoski == i %}
+												{% set vnoska_visible = true %}
+											{% endif %}
+										{% endif %}
+										{% if vnoska_visible %}
+											<option value="{{i}}" {% if dskapi_vnoski == i %} selected {% endif %}>{{i}}
+												месеца</option>
+										{% endif %}
+									{% endfor %}
+								</select>
+								<div class="{{dskapi_sumi_panel}}">
+									<div class="{{dskapi_kredit_panel}}">
+										<div class="dskapi_sumi_txt">Размер на кредита /{{dskapi_sign}}/</div>
+										<div>
+											<input class="dskapi_mesecna_price" type="text" id="dskapi_price_txt_checkout_display" readonly="readonly" value="{{dskapi_price}}"/>
+										</div>
+									</div>
+									<div class="{{dskapi_kredit_panel}}">
+										<div class="dskapi_sumi_txt">Месечна вноска /{{dskapi_sign}}/</div>
+										<div>
+											<input class="dskapi_mesecna_price" type="text" id="dskapi_vnoska_checkout" readonly="readonly" value="{{dskapi_vnoska}}"/>
+										</div>
+									</div>
+								</div>
+								<div class="{{dskapi_sumi_panel}}">
+									<div class="{{dskapi_kredit_panel}}">
+										<div class="dskapi_sumi_txt">Обща дължима сума /{{dskapi_sign}}/</div>
+										<div>
+											<input class="dskapi_mesecna_price" type="text" id="dskapi_obshtozaplashtane_checkout" readonly="readonly" value="{{obshtozaplashtane}}"/>
+										</div>
+									</div>
+									<div class="{{dskapi_kredit_panel}}">
+										<div class="dskapi_sumi_txt">ГПР /%/</div>
+										<div>
+											<input class="dskapi_mesecna_price" type="text" id="dskapi_gpr_checkout" readonly="readonly" value="{{dskapi_gpr}}"/>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="{{dskapi_body_panel_txt4}}">
+							Изчисленията са направени при допускането за първа падежна дата след 30 дни и са с насочваща цел. Избери най-подходящата месечна вноска.
+						</div>
+						<div class="{{dskapi_body_panel_footer}}">
+							<div class="dskapi_btn_cancel" id="dskapi-interest-schemes-close">Затвори</div>
+							<div class="{{dskapi_body_panel_left}}">
+								<div class="dskapi_txt_footer">Ver. {{DSKAPI_VERSION}}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 {% endif %}
