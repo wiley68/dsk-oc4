@@ -103,8 +103,8 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
         $this->load->model('extension/mt_dskapi_credit/module/mt_dskapi_credit');
         $statuses = $this->model_extension_mt_dskapi_credit_module_mt_dskapi_credit->getBankStatuses();
 
-        // Add "ДСК Банка Статус" column in the header between "Status" and "Total" columns
-        $columnHeader = '<th class="text-start">ДСК Банка Статус</th>';
+        // Add "Банка ДСК Статус" column in the header between "Status" and "Total" columns
+        $columnHeader = '<th class="text-start">Банка ДСК Статус</th>';
         // Find the "Status" column and add the new column after it before "Total"
         // From HTML structure: <th><a href="...">Status</a></th> ... <th class="text-end d-none d-lg-table-cell"><a href="...">Total</a></th>
         // Pattern searches for Status column and Total column after it (ignoring everything between them)
@@ -113,7 +113,7 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
         $output = preg_replace($pattern, '$1' . $columnHeader . '$3', $output, 1);
 
         // If the first pattern doesn't work, try a more general pattern that searches for Status and Total columns
-        if (strpos($output, 'ДСК Банка Статус') === false) {
+        if (strpos($output, 'Банка ДСК Статус') === false) {
             // Search for Status column (may have different structures) and Total column after it
             $pattern = '/(<th[^>]*>.*?Status.*?<\/th>)(.*?)(<th[^>]*>.*?Total.*?<\/th>)/is';
             $output = preg_replace($pattern, '$1' . $columnHeader . '$3', $output, 1);
@@ -203,7 +203,7 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
                 }
 
                 $statusHtml = '<div class="row mb-3">
-                    <label class="col-sm-2 col-form-label">ДСК Банка Статус</label>
+                    <label class="col-sm-2 col-form-label">Банка ДСК Статус</label>
                     <div class="col-sm-10">
                         <div class="form-control-plaintext">
                             <span class="' . $statusClass . ' fw-bold">' . $statusText . '</span>';
@@ -217,7 +217,7 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
                 </div>';
             } else {
                 $statusHtml = '<div class="row mb-3">
-                    <label class="col-sm-2 col-form-label">ДСК Банка Статус</label>
+                    <label class="col-sm-2 col-form-label">Банка ДСК Статус</label>
                     <div class="col-sm-10">
                         <div class="form-control-plaintext text-muted">—</div>
                     </div>

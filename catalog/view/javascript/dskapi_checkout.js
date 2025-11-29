@@ -6,6 +6,7 @@
     'use strict';
 
     let old_vnoski_checkout;
+    let popupInitialized = false;
 
     /**
      * Creates a CORS-enabled XMLHttpRequest
@@ -121,73 +122,127 @@
     }
 
     /**
+     * Closes the popup
+     *
+     * @param {HTMLElement} popupContainer Popup container element
+     */
+    function closePopup(popupContainer) {
+        if (popupContainer) {
+            popupContainer.style.display = 'none';
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+    }
+
+    /**
+     * Opens the popup
+     *
+     * @param {HTMLElement} popupContainer Popup container element
+     */
+    function openPopup(popupContainer) {
+        if (popupContainer) {
+            popupContainer.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+    }
+
+    /**
      * Initializes functionality for managing the interest schemes popup
      * Sets up event handlers for opening/closing popup via link, button, outside click, and ESC key
      */
     function initInterestSchemesPopup() {
+        // Prevent multiple initializations
+        if (popupInitialized) {
+            return;
+        }
+
         const popupContainer = document.getElementById('dskapi-interest-schemes-popup');
         const openLink = document.getElementById('dskapi-interest-schemes-link');
-        const closeButton = document.getElementById('dskapi-interest-schemes-close');
         const installmentsInput = document.getElementById('dskapi_pogasitelni_vnoski_input_checkout');
 
         if (!popupContainer || !openLink) {
+            // Retry initialization if elements are not yet available (max 10 attempts)
+            if (typeof initInterestSchemesPopup.retryCount === 'undefined') {
+                initInterestSchemesPopup.retryCount = 0;
+            }
+            if (initInterestSchemesPopup.retryCount < 10) {
+                initInterestSchemesPopup.retryCount++;
+                setTimeout(initInterestSchemesPopup, 100);
+            }
             return;
         }
+
+        // Mark as initialized
+        popupInitialized = true;
 
         // Initialize old value on load
         if (installmentsInput) {
             old_vnoski_checkout = parseFloat(installmentsInput.value);
         }
 
+        // Use event delegation for more reliable event handling
         // Open popup on link click
         openLink.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            popupContainer.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Prevent background scrolling
-        });
+            const currentPopup = document.getElementById('dskapi-interest-schemes-popup');
+            if (currentPopup) {
+                openPopup(currentPopup);
+            }
+        }, false);
 
-        // Close popup on "Close" button click
-        if (closeButton) {
-            closeButton.addEventListener('click', function (e) {
+        // Close popup on "Close" button click using event delegation
+        document.addEventListener('click', function (e) {
+            if (e.target && e.target.id === 'dskapi-interest-schemes-close') {
                 e.preventDefault();
                 e.stopPropagation();
-                closePopup();
-            });
-        }
+                const currentPopup = document.getElementById('dskapi-interest-schemes-popup');
+                closePopup(currentPopup);
+            }
+        }, false);
 
         // Close popup on click outside content
         popupContainer.addEventListener('click', function (e) {
             if (e.target === popupContainer) {
-                closePopup();
+                closePopup(popupContainer);
             }
-        });
+        }, false);
 
         // Close popup on ESC key press
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && popupContainer.style.display === 'block') {
-                closePopup();
+            if (e.key === 'Escape') {
+                const currentPopup = document.getElementById('dskapi-interest-schemes-popup');
+                if (currentPopup && currentPopup.style.display !== 'none') {
+                    closePopup(currentPopup);
+                }
             }
-        });
-
-        /**
-         * Closes the popup
-         */
-        function closePopup() {
-            popupContainer.style.display = 'none';
-            document.body.style.overflow = ''; // Restore scrolling
-        }
+        }, false);
     }
 
     // Export functions globally for use in onchange and onfocus attributes
     window.dskapi_pogasitelni_vnoski_input_focus_checkout = dskapi_pogasitelni_vnoski_input_focus_checkout;
     window.dskapi_pogasitelni_vnoski_input_change_checkout = dskapi_pogasitelni_vnoski_input_change_checkout;
 
-    // Initialize on DOM load
+    // Initialize on DOM load with multiple fallbacks
+    function tryInit() {
+        const popupContainer = document.getElementById('dskapi-interest-schemes-popup');
+        const openLink = document.getElementById('dskapi-interest-schemes-link');
+
+        if (popupContainer && openLink) {
+            initInterestSchemesPopup();
+        } else if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', tryInit);
+        } else {
+            // If DOM is ready but elements are not found, retry after a short delay
+            setTimeout(tryInit, 100);
+        }
+    }
+
+    // Start initialization
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initInterestSchemesPopup);
+        document.addEventListener('DOMContentLoaded', tryInit);
     } else {
-        initInterestSchemesPopup();
+        // DOM is already loaded, but try immediately and retry if needed
+        tryInit();
     }
 })();
 
