@@ -1,3 +1,8 @@
+/**
+ * DSKAPI Products - JavaScript functionality for product page
+ * Handles installment calculations, popup interactions, cart operations, and checkout redirection
+ */
+
 let old_vnoski;
 
 const SELECTORS = {
@@ -215,7 +220,7 @@ function addProductToCart() {
         const payload = serializeProductForm();
 
         if (!payload) {
-            reject({ error: { warning: 'Неуспешно добавяне на продукта.' } });
+            reject({ error: { warning: 'Failed to add product to cart.' } });
             return;
         }
 
@@ -238,7 +243,7 @@ function addProductToCart() {
                     const json = JSON.parse(xhr.responseText);
                     reject(json);
                 } catch (error) {
-                    reject({ error: { warning: xhr.statusText || 'Възникна грешка.' } });
+                    reject({ error: { warning: xhr.statusText || 'An error occurred.' } });
                 }
             },
         });
@@ -280,12 +285,12 @@ function showAlert(message, type = 'danger') {
 
     const alertContainer = $('#alert');
     if (alertContainer.length === 0) {
-        // Ако няма alert контейнер, създаваме го в началото на #product
+        // If there's no alert container, create it at the beginning of #product
         const productContainer = $('#product');
         if (productContainer.length > 0) {
             productContainer.prepend('<div id="alert"></div>');
         } else {
-            // Fallback към стандартен alert ако няма подходящ контейнер
+            // Fallback to standard alert if no suitable container exists
             alert(message);
             return;
         }
@@ -303,7 +308,7 @@ function showAlert(message, type = 'danger') {
 
     $('#alert').prepend(alertHtml);
 
-    // Автоматично скриване след 5 секунди
+    // Auto-hide after 5 seconds
     setTimeout(() => {
         $('#alert .alert').fadeOut(300, function () {
             $(this).remove();
@@ -319,7 +324,7 @@ function showAlert(message, type = 'danger') {
 function handleCartErrors(response, showAlerts = true) {
     if (!response || (!response.error && !response.redirect)) {
         if (showAlerts) {
-            showAlert('Възникна неочаквана грешка. Моля, опитайте отново.');
+            showAlert('An unexpected error occurred. Please try again.');
         }
         return;
     }
@@ -331,7 +336,7 @@ function handleCartErrors(response, showAlerts = true) {
 
     if (response.error && response.error.option && showAlerts) {
         renderOptionErrors(response.error.option);
-        // Показване на алерт с всички грешки за опции
+        // Show alert with all option errors
         const errorMessages = Object.values(response.error.option);
         if (errorMessages.length > 0) {
             showAlert(errorMessages.join('<br>'));
@@ -342,7 +347,7 @@ function handleCartErrors(response, showAlerts = true) {
         showAlert(response.error.warning, 'warning');
     }
 
-    // Обработка на общи грешки (string)
+    // Handle general errors (string)
     if (response.error && typeof response.error === 'string' && showAlerts) {
         showAlert(response.error);
     }
@@ -461,7 +466,7 @@ function dskapi_pogasitelni_vnoski_input_change(showAlerts = true) {
             }
 
             if (showAlerts) {
-                showAlert('Избраният брой погасителни вноски е под минималния.', 'warning');
+                showAlert('The selected number of installments is below the minimum.', 'warning');
             }
             installmentsInput.value = old_vnoski;
             return;
@@ -469,7 +474,7 @@ function dskapi_pogasitelni_vnoski_input_change(showAlerts = true) {
 
         toggleButtonVisibility(false);
         if (showAlerts) {
-            showAlert('Избраният брой погасителни вноски е над максималния.', 'warning');
+            showAlert('The selected number of installments is above the maximum.', 'warning');
         }
         installmentsInput.value = old_vnoski;
     };
@@ -531,9 +536,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     dskapiProductPopupContainer.style.display = 'block';
                 } else {
                     showAlert(
-                        'Максимално позволената цена за кредит ' +
+                        'Maximum allowed price for credit ' +
                         parseFloat(dskapi_maxstojnost.value).toFixed(2) +
-                        ' е надвишена!',
+                        ' has been exceeded!',
                         'warning'
                     );
                 }
@@ -656,8 +661,7 @@ document.addEventListener('DOMContentLoaded', function () {
         window.dskapi_calculateAndUpdateProductPrice =
             dskapi_calculateAndUpdateProductPrice;
 
-        // Изпълняваме процедурата веднъж след зареждане,
-        // за да синхронизираме цената спрямо текущите опции и количества.
+        // Execute procedure once after load to synchronize price based on current options and quantities
         setTimeout(() => {
             dskapi_calculateAndUpdateProductPrice(false);
 

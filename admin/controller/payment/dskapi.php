@@ -9,7 +9,11 @@ namespace Opencart\Admin\Controller\Extension\MtDskapiCredit\Payment;
  */
 class Dskapi extends \Opencart\System\Engine\Controller
 {
-
+    /**
+     * Displays the payment method settings form
+     *
+     * @return void
+     */
     public function index(): void
     {
         $this->load->language('extension/mt_dskapi_credit/payment/dskapi');
@@ -35,8 +39,8 @@ class Dskapi extends \Opencart\System\Engine\Controller
         $this->load->model('localisation/order_status');
         $data['order_statuses'] = $this->model_localisation_order_status->getOrderStatuses();
 
-        // Намиране на ID на статуса "Processing" по подразбиране
-        $processing_status_id = 2; // Стандартен ID за Processing в OpenCart
+        // Find the default "Processing" status ID
+        $processing_status_id = 2; // Standard ID for Processing in OpenCart
         foreach ($data['order_statuses'] as $status) {
             if (strtolower($status['name']) === 'processing') {
                 $processing_status_id = $status['order_status_id'];
@@ -61,6 +65,11 @@ class Dskapi extends \Opencart\System\Engine\Controller
         $this->response->setOutput($this->load->view('extension/mt_dskapi_credit/payment/dskapi', $data));
     }
 
+    /**
+     * Saves the payment method settings
+     *
+     * @return void
+     */
     public function save(): void
     {
         $this->load->language('extension/mt_dskapi_credit/payment/dskapi');
@@ -81,13 +90,18 @@ class Dskapi extends \Opencart\System\Engine\Controller
         $this->response->setOutput(json_encode($json));
     }
 
+    /**
+     * Installs the payment method - sets default settings
+     *
+     * @return void
+     */
     public function install(): void
     {
         $this->load->model('localisation/order_status');
         $order_statuses = $this->model_localisation_order_status->getOrderStatuses();
 
-        // Намиране на ID на статуса "Processing" по подразбиране
-        $processing_status_id = 2; // Стандартен ID за Processing в OpenCart
+        // Find the default "Processing" status ID
+        $processing_status_id = 2; // Standard ID for Processing in OpenCart
         foreach ($order_statuses as $status) {
             if (strtolower($status['name']) === 'processing') {
                 $processing_status_id = $status['order_status_id'];
@@ -95,7 +109,7 @@ class Dskapi extends \Opencart\System\Engine\Controller
             }
         }
 
-        // Задаване на стойности по подразбиране при инсталиране
+        // Set default values on installation
         $this->load->model('setting/setting');
         $default_settings = [
             'payment_dskapi_order_status_id' => $processing_status_id,

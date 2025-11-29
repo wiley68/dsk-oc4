@@ -1,5 +1,6 @@
 /**
- * DSKAPI Checkout - Управление на попъпа с лихвени схеми
+ * DSKAPI Checkout - Management of interest schemes popup
+ * Handles popup interactions, installment calculations, and dynamic field updates
  */
 (function () {
     'use strict';
@@ -7,7 +8,11 @@
     let old_vnoski_checkout;
 
     /**
-     * Създава CORS заявка
+     * Creates a CORS-enabled XMLHttpRequest
+     *
+     * @param {string} method HTTP method (GET, POST, etc.)
+     * @param {string} url Request URL
+     * @returns {XMLHttpRequest|null} XMLHttpRequest object or null if not supported
      */
     function createCORSRequest(method, url) {
         var xhr = new XMLHttpRequest();
@@ -23,14 +28,17 @@
     }
 
     /**
-     * Запомня текущо избрания брой вноски
+     * Stores the previous number of installments when input gains focus
+     *
+     * @param {number} _old_vnoski Previous number of installments
      */
     function dskapi_pogasitelni_vnoski_input_focus_checkout(_old_vnoski) {
         old_vnoski_checkout = _old_vnoski;
     }
 
     /**
-     * Актуализира данните при промяна на избора на вноски
+     * Updates installment fields when the number of installments changes
+     * Makes API call to get updated payment information and updates popup fields
      */
     function dskapi_pogasitelni_vnoski_input_change_checkout() {
         const installmentsInput = document.getElementById('dskapi_pogasitelni_vnoski_input_checkout');
@@ -63,7 +71,7 @@
                 try {
                     responseData = JSON.parse(this.response);
                 } catch (e) {
-                    console.error('Грешка при парсиране на отговора:', e);
+                    console.error('Error parsing response:', e);
                     return;
                 }
 
@@ -74,7 +82,7 @@
 
                 if (dsk_is_visible) {
                     if (options) {
-                        // Актуализиране на полетата в попъпа
+                        // Update fields in popup
                         const dskapi_vnoska_input = document.getElementById('dskapi_vnoska_checkout');
                         const dskapi_gpr = document.getElementById('dskapi_gpr_checkout');
                         const dskapi_obshtozaplashtane_input = document.getElementById('dskapi_obshtozaplashtane_checkout');
@@ -95,13 +103,13 @@
 
                         old_vnoski_checkout = dskapi_vnoski;
                     } else {
-                        alert('Избраният брой погасителни вноски е под минималния.');
+                        alert('The selected number of installments is below the minimum.');
                         if (installmentsInput) {
                             installmentsInput.value = old_vnoski_checkout;
                         }
                     }
                 } else {
-                    alert('Избраният брой погасителни вноски е над максималния.');
+                    alert('The selected number of installments is above the maximum.');
                     if (installmentsInput) {
                         installmentsInput.value = old_vnoski_checkout;
                     }
@@ -113,7 +121,8 @@
     }
 
     /**
-     * Инициализира функционалността за управление на попъпа с лихвени схеми
+     * Initializes functionality for managing the interest schemes popup
+     * Sets up event handlers for opening/closing popup via link, button, outside click, and ESC key
      */
     function initInterestSchemesPopup() {
         const popupContainer = document.getElementById('dskapi-interest-schemes-popup');
@@ -125,20 +134,20 @@
             return;
         }
 
-        // Инициализиране на старата стойност при зареждане
+        // Initialize old value on load
         if (installmentsInput) {
             old_vnoski_checkout = parseFloat(installmentsInput.value);
         }
 
-        // Отваряне на попъпа при клик върху линка
+        // Open popup on link click
         openLink.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
             popupContainer.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Предотвратява скролване на фона
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
         });
 
-        // Затваряне на попъпа при клик върху бутона "Затвори"
+        // Close popup on "Close" button click
         if (closeButton) {
             closeButton.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -147,14 +156,14 @@
             });
         }
 
-        // Затваряне на попъпа при клик извън съдържанието
+        // Close popup on click outside content
         popupContainer.addEventListener('click', function (e) {
             if (e.target === popupContainer) {
                 closePopup();
             }
         });
 
-        // Затваряне на попъпа при натискане на ESC
+        // Close popup on ESC key press
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && popupContainer.style.display === 'block') {
                 closePopup();
@@ -162,19 +171,19 @@
         });
 
         /**
-         * Затваря попъпа
+         * Closes the popup
          */
         function closePopup() {
             popupContainer.style.display = 'none';
-            document.body.style.overflow = ''; // Възстановява скролването
+            document.body.style.overflow = ''; // Restore scrolling
         }
     }
 
-    // Експортиране на функциите глобално за използване в onchange и onfocus атрибутите
+    // Export functions globally for use in onchange and onfocus attributes
     window.dskapi_pogasitelni_vnoski_input_focus_checkout = dskapi_pogasitelni_vnoski_input_focus_checkout;
     window.dskapi_pogasitelni_vnoski_input_change_checkout = dskapi_pogasitelni_vnoski_input_change_checkout;
 
-    // Инициализация при зареждане на DOM
+    // Initialize on DOM load
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initInterestSchemesPopup);
     } else {

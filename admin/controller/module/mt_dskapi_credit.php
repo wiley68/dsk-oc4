@@ -19,6 +19,11 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
     private $event_checkout = 'extension/mt_dskapi_credit/event/mt_dskapi_credit_checkout';
     private $event_order = 'extension/mt_dskapi_credit/event/mt_dskapi_credit_order';
 
+    /**
+     * Displays the module settings form
+     *
+     * @return void
+     */
     public function index(): void
     {
         $this->load->language($this->path);
@@ -57,6 +62,11 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
         $this->response->setOutput($this->load->view($this->path, $data));
     }
 
+    /**
+     * Saves the module settings
+     *
+     * @return void
+     */
     public function save(): void
     {
         $this->load->language($this->path);
@@ -105,6 +115,11 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
         $this->response->setOutput(json_encode($json));
     }
 
+    /**
+     * Initializes event hooks for the module
+     *
+     * @return void
+     */
     private function init(): void
     {
         $dsk_separator = (VERSION >= '4.0.2') ? '.' : '|';
@@ -239,6 +254,11 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
         }
     }
 
+    /**
+     * Installs the module - registers event hooks and creates necessary database tables
+     *
+     * @return void
+     */
     public function install()
     {
         if ($this->user->hasPermission('modify', $this->path)) {
@@ -249,6 +269,11 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
         $this->model_extension_mt_dskapi_credit_module_mt_dskapi_credit->install();
     }
 
+    /**
+     * Uninstalls the module - removes event hooks and drops database tables
+     *
+     * @return void
+     */
     public function uninstall()
     {
         if ($this->user->hasPermission('modify', $this->path)) {

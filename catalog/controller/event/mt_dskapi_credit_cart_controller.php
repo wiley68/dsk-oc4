@@ -9,9 +9,15 @@ namespace Opencart\Catalog\Controller\Extension\MtDskapiCredit\Event;
  */
 class MtDskapiCreditCartController extends \Opencart\System\Engine\Controller
 {
-
     private $module = 'module_mt_dskapi_credit';
 
+    /**
+     * Initializes the cart controller event - loads CSS and JavaScript files for the cart page
+     *
+     * @param string &$route
+     * @param array &$data
+     * @return void
+     */
     public function init(&$route, &$data): void
     {
         if ($route == 'checkout/cart') {

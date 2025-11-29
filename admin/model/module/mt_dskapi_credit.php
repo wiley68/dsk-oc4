@@ -9,7 +9,11 @@ namespace Opencart\Admin\Model\Extension\MtDskapiCredit\Module;
  */
 class MtDskapiCredit extends \Opencart\System\Engine\Model
 {
-
+    /**
+     * Installs the module - creates necessary database tables
+     *
+     * @return void
+     */
     public function install(): void
     {
         $table_dskpayment_orders = \DB_PREFIX . 'dskpayment_orders';
@@ -25,6 +29,11 @@ class MtDskapiCredit extends \Opencart\System\Engine\Model
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;");
     }
 
+    /**
+     * Uninstalls the module - drops database tables
+     *
+     * @return void
+     */
     public function uninstall(): void
     {
         $table_dskpayment_orders = \DB_PREFIX . 'dskpayment_orders';
@@ -32,7 +41,7 @@ class MtDskapiCredit extends \Opencart\System\Engine\Model
     }
 
     /**
-     * Връща банковия статус за даден ордер
+     * Returns the bank status for a given order
      *
      * @param int $order_id
      * @return array|null
@@ -50,7 +59,7 @@ class MtDskapiCredit extends \Opencart\System\Engine\Model
     }
 
     /**
-     * Връща масива с всички банкови статуси
+     * Returns an array with all bank statuses
      *
      * @return array
      */

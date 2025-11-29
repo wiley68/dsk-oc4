@@ -1,5 +1,17 @@
+/**
+ * DSKAPI Cart - JavaScript functionality for cart page
+ * Handles installment calculations, popup interactions, and checkout redirection
+ */
+
 let old_vnoski;
 
+/**
+ * Creates a CORS-enabled XMLHttpRequest
+ *
+ * @param {string} method HTTP method (GET, POST, etc.)
+ * @param {string} url Request URL
+ * @returns {XMLHttpRequest|null} XMLHttpRequest object or null if not supported
+ */
 function createCORSRequest(method, url) {
     var xhr = new XMLHttpRequest();
     if ('withCredentials' in xhr) {
@@ -13,10 +25,19 @@ function createCORSRequest(method, url) {
     return xhr;
 }
 
+/**
+ * Stores the previous number of installments when input gains focus
+ *
+ * @param {number} _old_vnoski Previous number of installments
+ */
 function dskapi_pogasitelni_vnoski_input_focus(_old_vnoski) {
     old_vnoski = _old_vnoski;
 }
 
+/**
+ * Updates installment fields when the number of installments changes
+ * Makes API call to get updated payment information and updates popup and button fields
+ */
 function dskapi_pogasitelni_vnoski_input_change() {
     const dskapi_vnoski = parseFloat(
         document.getElementById('dskapi_pogasitelni_vnoski_input').value
@@ -45,7 +66,7 @@ function dskapi_pogasitelni_vnoski_input_change() {
             try {
                 responseData = JSON.parse(this.response);
             } catch (e) {
-                console.error('Грешка при парсиране на отговора:', e);
+                console.error('Error parsing response:', e);
                 return;
             }
 
@@ -56,7 +77,7 @@ function dskapi_pogasitelni_vnoski_input_change() {
 
             if (dsk_is_visible) {
                 if (options) {
-                    // Актуализиране на полетата в попъпа
+                    // Update fields in popup
                     const dskapi_vnoska_input = document.getElementById('dskapi_vnoska');
                     const dskapi_gpr = document.getElementById('dskapi_gpr');
                     const dskapi_obshtozaplashtane_input = document.getElementById(
@@ -75,7 +96,7 @@ function dskapi_pogasitelni_vnoski_input_change() {
                         ).toFixed(2);
                     }
 
-                    // Актуализиране на полетата в бутона (ако съществуват)
+                    // Update fields in button (if they exist)
                     const dskapi_vnoski_button = document.getElementById('dskapi_vnoski_button');
                     const dskapi_vnoska_button = document.getElementById('dskapi_vnoska_button');
 
@@ -88,7 +109,7 @@ function dskapi_pogasitelni_vnoski_input_change() {
 
                     old_vnoski = dskapi_vnoski;
                 } else {
-                    alert('Избраният брой погасителни вноски е под минималния.');
+                    alert('The selected number of installments is below the minimum.');
                     var dskapi_vnoski_input = document.getElementById(
                         'dskapi_pogasitelni_vnoski_input'
                     );
@@ -97,7 +118,7 @@ function dskapi_pogasitelni_vnoski_input_change() {
                     }
                 }
             } else {
-                alert('Избраният брой погасителни вноски е над максималния.');
+                alert('The selected number of installments is above the maximum.');
                 var dskapi_vnoski_input = document.getElementById(
                     'dskapi_pogasitelni_vnoski_input'
                 );
@@ -111,10 +132,9 @@ function dskapi_pogasitelni_vnoski_input_change() {
 }
 
 /**
- * Добавя продукта в количката и пренасочва към checkout с избран платежен метод DSK
- * За използване в cart страницата - директно редирект към checkout без добавяне в количката
+ * Resolves the language code from URL parameters or HTML lang attribute
  *
- * @return {void}
+ * @returns {string} Normalized language code (e.g., 'en-gb', 'bg-bg')
  */
 function resolveLanguageCode() {
     const params = new URLSearchParams(window.location.search);
@@ -148,16 +168,31 @@ function resolveLanguageCode() {
     return languageMap[normalized] || normalized;
 }
 
+/**
+ * Resolves the base URL from base tag or current origin
+ *
+ * @returns {string} Base URL
+ */
 function resolveBaseUrl() {
     const baseTag = document.querySelector('base');
     return baseTag && baseTag.href ? baseTag.href : window.location.origin + '/';
 }
 
+/**
+ * Builds an absolute URL from a relative path
+ *
+ * @param {string} path Relative or absolute path
+ * @returns {string} Absolute URL
+ */
 function buildAbsoluteUrl(path) {
     const normalized = path.startsWith('/') ? path.slice(1) : path;
     return new URL(normalized, resolveBaseUrl()).toString();
 }
 
+/**
+ * Redirects to checkout page with DSKAPI payment method pre-selected
+ * Stores preference in sessionStorage and adds dskapi=1 parameter to URL
+ */
 function dskapi_redirectToCheckoutWithPaymentMethod() {
     try {
         sessionStorage.setItem('dskapiPreferredPayment', 'mt_dskapi_credit.dskapi');
@@ -176,19 +211,23 @@ function dskapi_redirectToCheckoutWithPaymentMethod() {
     window.location.href = buildAbsoluteUrl(`index.php?${params.toString()}`);
 }
 
-// Делегиране на събития за бутона "Купи на изплащане" - използваме document-level listener
-// Това работи дори ако елементите се зареждат динамично и се изпълнява само веднъж
+// Event delegation for "Buy on credit" button - using document-level listener
+// This works even if elements are loaded dynamically and executes only once
 let dskapiBuyCreditHandlerBound = false;
 
+/**
+ * Initializes DSKAPI cart widget functionality
+ * Sets up event handlers for buttons and popup interactions
+ */
 function initDskapiCartWidget() {
-    // Делегиране на събития за бутона "Купи на изплащане" - само веднъж
+    // Event delegation for "Buy on credit" button - only once
     if (!dskapiBuyCreditHandlerBound) {
         dskapiBuyCreditHandlerBound = true;
         document.addEventListener(
             'click',
             function (event) {
                 const target = event.target;
-                // Проверяваме дали кликването е върху бутона или неговите деца
+                // Check if click is on button or its children
                 if (
                     target &&
                     (target.id === 'dskapi_buy_credit' ||
@@ -210,16 +249,16 @@ function initDskapiCartWidget() {
                 }
             },
             true
-        ); // Използваме capture phase за по-ранно intercept-ване
+        ); // Use capture phase for earlier interception
     }
 
-    // Задаваме cursor стил на бутона ако съществува
+    // Set cursor style on button if it exists
     const dskapi_buy_credit = document.getElementById('dskapi_buy_credit');
     if (dskapi_buy_credit !== null) {
         dskapi_buy_credit.style.cursor = 'pointer';
     }
 
-    // Инициализираме основния бутон btn_dskapi
+    // Initialize main button btn_dskapi
     const btn_dskapi = document.getElementById('btn_dskapi');
     if (btn_dskapi !== null && btn_dskapi.dataset.dskapiBound !== '1') {
         btn_dskapi.dataset.dskapiBound = '1';
@@ -228,7 +267,7 @@ function initDskapiCartWidget() {
             'dskapi_button_status'
         );
         if (!dskapi_button_status_el) {
-            return; // Ако няма button_status елемент, не продължаваме
+            return; // If button_status element doesn't exist, don't continue
         }
 
         const dskapi_button_status = parseInt(dskapi_button_status_el.value) || 0;
@@ -241,7 +280,7 @@ function initDskapiCartWidget() {
         const dskapi_maxstojnost = document.getElementById('dskapi_maxstojnost');
 
         if (!dskapi_price || !dskapi_maxstojnost) {
-            return; // Ако няма нужните елементи, не продължаваме
+            return; // If required elements don't exist, don't continue
         }
 
         let dskapi_priceall = parseFloat(dskapi_price.value);
@@ -296,16 +335,16 @@ function initDskapiCartWidget() {
                         }
                     } else {
                         alert(
-                            'Максимално позволената цена за кредит ' +
+                            'Maximum allowed price for credit ' +
                             parseFloat(dskapi_maxstojnost.value).toFixed(2) +
-                            ' е надвишена!'
+                            ' has been exceeded!'
                         );
                     }
                 }
                 return false;
             },
             true
-        ); // Използваме capture phase
+        ); // Use capture phase
 
         if (dskapi_back_credit) {
             dskapi_back_credit.addEventListener(
@@ -323,7 +362,10 @@ function initDskapiCartWidget() {
     }
 }
 
-// Функция за инициализация с няколко опита
+/**
+ * Initialization function with retry mechanism
+ * Attempts to initialize widget multiple times until required elements are found
+ */
 function initDskapiCartWidgetWithRetry() {
     let attempts = 0;
     const maxAttempts = 10;
@@ -331,7 +373,7 @@ function initDskapiCartWidgetWithRetry() {
     const tryInit = function () {
         attempts++;
 
-        // Проверяваме дали нужните елементи съществуват
+        // Check if required elements exist
         const btn_dskapi = document.getElementById('btn_dskapi');
         const dskapi_buy_credit = document.getElementById('dskapi_buy_credit');
         const dskapi_button_status = document.getElementById(
@@ -348,10 +390,12 @@ function initDskapiCartWidgetWithRetry() {
     tryInit();
 }
 
+// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function () {
     initDskapiCartWidgetWithRetry();
 });
 
+// Re-initialize on PrestaShop cart updates (if PrestaShop is present)
 if (typeof prestashop !== 'undefined' && prestashop.on) {
     prestashop.on('updatedCart', function () {
         setTimeout(initDskapiCartWidgetWithRetry, 100);
@@ -361,7 +405,7 @@ if (typeof prestashop !== 'undefined' && prestashop.on) {
     });
 }
 
-// Също опитваме се след пълно зареждане на страницата
+// Also try after full page load
 window.addEventListener('load', function () {
     setTimeout(initDskapiCartWidgetWithRetry, 300);
 });

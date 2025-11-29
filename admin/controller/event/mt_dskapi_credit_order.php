@@ -10,7 +10,7 @@ namespace Opencart\Admin\Controller\Extension\MtDskapiCredit\Event;
 class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
 {
     /**
-     * Добавя банков статус в данните за списъка с ордери
+     * Adds bank status to the order list data
      *
      * @param string &$route
      * @param array &$data
@@ -22,10 +22,10 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
             return;
         }
 
-        // Зареждаме модела
+        // Load the model
         $this->load->model('extension/mt_dskapi_credit/module/mt_dskapi_credit');
 
-        // Ако имаме ордери в данните, добавяме банков статус за всеки
+        // If we have orders in the data, add bank status for each
         if (isset($data['orders']) && is_array($data['orders'])) {
             $statuses = $this->model_extension_mt_dskapi_credit_module_mt_dskapi_credit->getBankStatuses();
 
@@ -42,12 +42,12 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
                     $order['dskapi_bank_status'] = null;
                 }
             }
-            unset($order); // Премахваме референцията
+            unset($order); // Remove the reference
         }
     }
 
     /**
-     * Добавя банков статус в данните за детайлния преглед на ордер
+     * Adds bank status to the order detail view data
      *
      * @param string &$route
      * @param array &$data
@@ -59,10 +59,10 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
             return;
         }
 
-        // Зареждаме модела
+        // Load the model
         $this->load->model('extension/mt_dskapi_credit/module/mt_dskapi_credit');
 
-        // Проверяваме дали има order_id
+        // Check if order_id exists
         if (isset($this->request->get['order_id'])) {
             $order_id = (int)$this->request->get['order_id'];
             $bankStatus = $this->model_extension_mt_dskapi_credit_module_mt_dskapi_credit->getBankStatus($order_id);
@@ -82,7 +82,7 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
     }
 
     /**
-     * Добавя колона в таблицата със списъка на ордерите
+     * Adds a column to the order list table
      *
      * @param string &$route
      * @param array &$data
@@ -99,28 +99,28 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
             return;
         }
 
-        // Зареждаме данните за банковите статуси
+        // Load bank status data
         $this->load->model('extension/mt_dskapi_credit/module/mt_dskapi_credit');
         $statuses = $this->model_extension_mt_dskapi_credit_module_mt_dskapi_credit->getBankStatuses();
 
-        // Добавяме колона "ДСК Банка Статус" в header-а между "Status" и "Total" колоните
+        // Add "ДСК Банка Статус" column in the header between "Status" and "Total" columns
         $columnHeader = '<th class="text-start">ДСК Банка Статус</th>';
-        // Търсим колоната "Status" и добавяме новата колона след нея преди "Total"
-        // От HTML структурата: <th><a href="...">Status</a></th> ... <th class="text-end d-none d-lg-table-cell"><a href="...">Total</a></th>
-        // Pattern търси Status колоната и Total колоната след нея (игнорирайки всичко между тях)
-        // Използваме non-greedy match за да намерим първата Total колона след Status
+        // Find the "Status" column and add the new column after it before "Total"
+        // From HTML structure: <th><a href="...">Status</a></th> ... <th class="text-end d-none d-lg-table-cell"><a href="...">Total</a></th>
+        // Pattern searches for Status column and Total column after it (ignoring everything between them)
+        // Use non-greedy match to find the first Total column after Status
         $pattern = '/(<th[^>]*><a[^>]*>Status<\/a><\/th>)(.*?)(<th[^>]*><a[^>]*>Total<\/a><\/th>)/is';
         $output = preg_replace($pattern, '$1' . $columnHeader . '$3', $output, 1);
 
-        // Ако първият pattern не работи, опитваме се с по-общ pattern който търси Status и Total колоните
+        // If the first pattern doesn't work, try a more general pattern that searches for Status and Total columns
         if (strpos($output, 'ДСК Банка Статус') === false) {
-            // Търсим Status колоната (може да има различни структури) и Total колоната след нея
+            // Search for Status column (may have different structures) and Total column after it
             $pattern = '/(<th[^>]*>.*?Status.*?<\/th>)(.*?)(<th[^>]*>.*?Total.*?<\/th>)/is';
             $output = preg_replace($pattern, '$1' . $columnHeader . '$3', $output, 1);
         }
 
-        // Добавяме данните за всеки ред - търсим редовете в tbody
-        // Pattern за намиране на order_id в href
+        // Add data for each row - search for rows in tbody
+        // Pattern to find order_id in href
         preg_match_all('/href="[^"]*route=sale\/order\.info[^"]*order_id=(\d+)[^"]*"/', $output, $orderMatches);
 
         if (!empty($orderMatches[1])) {
@@ -135,27 +135,27 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
                     $statusId = (int)$bankStatus['order_status'];
                     $statusText = htmlspecialchars($statuses[$statusId] ?? 'Неизвестен статус', ENT_QUOTES, 'UTF-8');
 
-                    // Добавяме цветово кодиране според статуса
+                    // Add color coding based on status
                     if ($statusId >= 7) {
-                        $statusClass = 'text-success'; // Успешни статуси
+                        $statusClass = 'text-success'; // Successful statuses
                     } elseif ($statusId >= 4) {
-                        $statusClass = 'text-danger'; // Неуспешни статуси
+                        $statusClass = 'text-danger'; // Failed statuses
                     } else {
-                        $statusClass = 'text-info'; // В процес
+                        $statusClass = 'text-info'; // In progress
                     }
                 }
 
                 $statusCell = '<td class="text-start"><span class="' . $statusClass . '">' . $statusText . '</span></td>';
 
-                // Намираме реда който съдържа order_id и добавяме клетката след "Status" клетката преди "Total" клетката
-                // Escape-ваме специалните символи в order_id
+                // Find the row that contains order_id and add the cell after "Status" cell before "Total" cell
+                // Escape special characters in order_id
                 $escapedOrderId = preg_quote((string)$order_id, '/');
-                // Търсим реда с order_id в Action клетката, намираме Status клетката и Total клетката след нея
-                // Структурата: Order ID -> Store -> Customer -> Status -> Total -> Date Added -> Date Modified -> Action
-                // Status клетката е обикновено <td>Status</td> без класове, след Customer клетката
-                // Търсим целия ред от <tr> до </tr> който завършва с order_id в Action клетката
-                // Намираме Status клетката (която е преди Total клетката) и добавяме новата клетка след нея
-                // Status клетката може да бъде Processing, Pending, Voided, Complete или друг статус
+                // Search for the row with order_id in Action cell, find Status cell and Total cell after it
+                // Structure: Order ID -> Store -> Customer -> Status -> Total -> Date Added -> Date Modified -> Action
+                // Status cell is usually <td>Status</td> without classes, after Customer cell
+                // Search for the entire row from <tr> to </tr> that ends with order_id in Action cell
+                // Find Status cell (which is before Total cell) and add the new cell after it
+                // Status cell can be Processing, Pending, Voided, Complete or other status
                 $pattern = '/(<tr[^>]*>.*?)(<td>Processing<\/td>|<td>Pending<\/td>|<td>Voided<\/td>|<td>Complete<\/td>|<td>[^<]*<\/td>)(\s*<td class="text-end d-none d-lg-table-cell">.*?order_id=' . $escapedOrderId . '[^>]*>.*?<\/tr>)/s';
                 $output = preg_replace($pattern, '$1$2' . $statusCell . '$3', $output, 1);
             }
@@ -163,7 +163,7 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
     }
 
     /**
-     * Добавя поле в детайлния преглед на ордер
+     * Adds a field to the order detail view
      *
      * @param string &$route
      * @param array &$data
@@ -180,7 +180,7 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
             return;
         }
 
-        // Зареждаме данните за банковия статус
+        // Load bank status data
         $this->load->model('extension/mt_dskapi_credit/module/mt_dskapi_credit');
 
         if (isset($this->request->get['order_id'])) {
@@ -194,7 +194,7 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
                 $statusId = (int)$bankStatus['order_status'];
                 $statusText = htmlspecialchars($statuses[$statusId] ?? 'Неизвестен статус', ENT_QUOTES, 'UTF-8');
 
-                // Добавяме цветово кодиране
+                // Add color coding
                 $statusClass = 'text-info';
                 if ($statusId >= 7) {
                     $statusClass = 'text-success';
@@ -224,19 +224,19 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
                 </div>';
             }
 
-            // Добавяме полето след секцията с информация за плащането
-            // Търсим секцията с payment метода - обикновено има label с "Payment Method" или подобно
-            // Добавяме след секцията с payment метода или order status
+            // Add the field after the payment information section
+            // Search for the payment method section - usually has a label with "Payment Method" or similar
+            // Add after the payment method section or order status
             if (preg_match('/(<div class="row mb-3">.*?<label[^>]*>.*?(?:Payment|Плащане|Статус)[^<]*<\/label>.*?<\/div>\s*<\/div>\s*<\/div>)/s', $output, $matches)) {
-                // Добавяме след намерената секция
+                // Add after the found section
                 $matchText = $matches[0];
                 $output = str_replace($matchText, $matchText . $statusHtml, $output);
             } elseif (preg_match('/(<div class="row mb-3">.*?<\/div>\s*<\/div>\s*<\/div>\s*<\/div>\s*<\/div>)/s', $output, $matches)) {
-                // Fallback - добавяме след първата секция с информация
+                // Fallback - add after the first information section
                 $matchText = $matches[0];
                 $output = str_replace($matchText, $matchText . $statusHtml, $output);
             } else {
-                // Fallback - добавяме преди затварящия </form> или </div>
+                // Fallback - add before closing </form> or </div>
                 $output = preg_replace('/(<\/form>|<\/div>\s*<\/div>\s*<\/div>\s*<\/div>)/', $statusHtml . '$1', $output, 1);
             }
         }

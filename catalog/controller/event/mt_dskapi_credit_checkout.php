@@ -10,8 +10,8 @@ namespace Opencart\Catalog\Controller\Extension\MtDskapiCredit\Event;
 class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
 {
     /**
-     * Запазва параметър dskapi=1 в session ако е наличен в URL-а
-     * Този метод се изпълнява за всички страници преди редиректа към логин
+     * Saves dskapi=1 parameter to session if present in URL
+     * This method is executed for all pages before redirect to login
      *
      * @param string &$route
      * @param array &$data
@@ -19,8 +19,8 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
      */
     public function saveParam(&$route, &$data): void
     {
-        // Запазваме параметъра dskapi=1 в session-а ако е наличен в URL-а
-        // Само ако параметърът е точно "1" за да избегнем случайни активации
+        // Save dskapi=1 parameter to session if present in URL
+        // Only if parameter is exactly "1" to avoid accidental activations
         if (
             isset($this->request->get['dskapi']) &&
             $this->request->get['dskapi'] === '1' &&
@@ -31,8 +31,8 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
     }
 
     /**
-     * Запазва параметър dskapi=1 в session при зареждане на checkout страницата
-     * Също така възстановява параметъра в URL-а ако е запазен в session но липсва в URL-а
+     * Saves dskapi=1 parameter to session when loading checkout page
+     * Also restores the parameter in URL if saved in session but missing from URL
      *
      * @param string &$route
      * @param array &$data
@@ -40,8 +40,8 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
      */
     public function init(&$route, &$data): void
     {
-        // Запазваме параметъра dskapi=1 в session-а ако е наличен в URL-а (за всички страници, не само checkout)
-        // Само ако параметърът е точно "1" за да избегнем случайни активации
+        // Save dskapi=1 parameter to session if present in URL (for all pages, not just checkout)
+        // Only if parameter is exactly "1" to avoid accidental activations
         if (
             isset($this->request->get['dskapi']) &&
             $this->request->get['dskapi'] === '1' &&
@@ -50,18 +50,18 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
             $this->session->data['dskapi_preferred'] = true;
         }
 
-        // Проверяваме дали сме на checkout страницата
+        // Check if we are on checkout page
         if ($route !== 'checkout/checkout') {
             return;
         }
 
-        // Ако имаме запазен параметър в session но не е в URL-а, добавяме го обратно
+        // If we have saved parameter in session but it's not in URL, add it back
         if (
             isset($this->session->data['dskapi_preferred']) &&
             $this->session->data['dskapi_preferred'] === true &&
             (!isset($this->request->get['dskapi']) || $this->request->get['dskapi'] !== '1')
         ) {
-            // Добавяме параметъра обратно в URL-а чрез редирект
+            // Add parameter back to URL via redirect
             $getParams = $this->request->get;
             $getParams['dskapi'] = '1';
             $currentUrl = $this->url->link($route, http_build_query($getParams), true);
@@ -71,7 +71,7 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
     }
 
     /**
-     * Добавя JavaScript код за автоматично избиране на payment метода dskapi
+     * Adds JavaScript code for automatically selecting dskapi payment method
      *
      * @param string &$route
      * @param array &$data
@@ -80,13 +80,13 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
      */
     public function addScript(&$route, &$data, &$output): void
     {
-        // Проверяваме дали сме на checkout страницата
+        // Check if we are on checkout page
         if ($route !== 'checkout/checkout') {
             return;
         }
 
-        // Проверяваме дали има параметър dskapi=1 в URL-а или в session-а
-        // Само ако параметърът е точно "1" за да избегнем случайни активации
+        // Check if dskapi=1 parameter exists in URL or session
+        // Only if parameter is exactly "1" to avoid accidental activations
         $has_dskapi = (isset($this->request->get['dskapi']) &&
             $this->request->get['dskapi'] === '1' &&
             is_string($this->request->get['dskapi'])) ||
@@ -97,30 +97,31 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
             return;
         }
 
-        // Проверяваме дали output е валиден string
+        // Check if output is a valid string
         if (!is_string($output) || strpos($output, '</body>') === false) {
             return;
         }
 
-        // Добавяме JavaScript код за автоматично избиране на payment метода
+        // Add JavaScript code for automatically selecting payment method
         $saveUrl = $this->url->link('checkout/payment_method.save', 'language=' . $this->config->get('config_language'));
         $getMethodsUrl = $this->url->link('checkout/payment_method.getMethods', 'language=' . $this->config->get('config_language'));
         $confirmUrl = $this->url->link('checkout/confirm.confirm', 'language=' . $this->config->get('config_language'));
         $language = $this->config->get('config_language');
 
-        $script = '
+        // phpcs:ignore -- JavaScript code in string, linter errors are false positives
+        $script = <<<JS
 <script>
 (function() {
     "use strict";
     
-    // Проверяваме дали jQuery е наличен (необходимо за OpenCart)
+    // Check if jQuery is available (required for OpenCart)
     if (typeof jQuery === "undefined" || typeof $ === "undefined") {
-        console.warn("DSKAPI: jQuery не е наличен, спираме изпълнението");
+        console.warn("DSKAPI: jQuery is not available, stopping execution");
         return;
     }
     
-    // Проверяваме дали има параметър dskapi=1 в URL-а
-    // Това ще работи и след редиректа от PHP когато параметърът е възстановен от session
+    // Check if dskapi=1 parameter exists in URL
+    // This will work even after PHP redirect when parameter is restored from session
     try {
         const urlParams = new URLSearchParams(window.location.search);
         const dskapiParam = urlParams.get("dskapi");
@@ -130,47 +131,47 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
             return;
         }
     } catch (e) {
-        console.warn("DSKAPI: Грешка при проверка на URL параметри:", e);
+        console.warn("DSKAPI: Error checking URL parameters:", e);
         return;
     }
     
-    // Функция за проверка дали shipping е избран
+    // Function to check if shipping is selected
     function isShippingSelected() {
         try {
-            // Проверяваме дали има shipping метод избран
+            // Check if shipping method is selected
             const shippingCode = document.querySelector("#input-shipping-code");
-            // Ако няма shipping метод изобщо (продукт без доставка), считаме че shipping е "избран"
+            // If there is no shipping method at all (product without delivery), consider shipping as "selected"
             const hasShipping = document.querySelector("#checkout-shipping-method");
             if (!hasShipping) {
-                return true; // Няма shipping, значи можем да запишем payment
+                return true; // No shipping, so we can save payment
             }
-            // Ако има shipping секция, проверяваме дали е избран
+            // If shipping section exists, check if it's selected
             return shippingCode && shippingCode.value && shippingCode.value !== "";
         } catch (e) {
-            console.warn("DSKAPI: Грешка при проверка на shipping:", e);
-            return false; // При грешка считаме че shipping не е избран (безопасен fallback)
+            console.warn("DSKAPI: Error checking shipping:", e);
+            return false; // On error consider shipping as not selected (safe fallback)
         }
     }
     
-    // Флаг за предотвратяване на многократно изпълнение
+    // Flag to prevent multiple executions
     let isSavingPayment = false;
     let paymentSaved = false;
     
-    // Функция за проверка дали payment метода вече е записан
+    // Function to check if payment method is already saved
     function isPaymentMethodSaved() {
         try {
             const paymentCodeInput = document.querySelector("#input-payment-code");
             return paymentCodeInput && paymentCodeInput.value === "dskapi.dskapi";
         } catch (e) {
-            console.warn("DSKAPI: Грешка при проверка на payment метод:", e);
-            return false; // При грешка считаме че не е записан (безопасен fallback)
+            console.warn("DSKAPI: Error checking payment method:", e);
+            return false; // On error consider it's not saved (safe fallback)
         }
     }
     
-    // Функция за автоматично записване на dskapi payment метода
+    // Function for automatically saving dskapi payment method
     function autoSaveDskapiPayment() {
         try {
-            // Проверяваме дали вече не се изпълнява или вече е записан
+            // Check if already executing or already saved
             if (isSavingPayment || paymentSaved || isPaymentMethodSaved()) {
                 return false;
             }
@@ -181,11 +182,11 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
             
             isSavingPayment = true;
             
-            // Първо зареждаме payment методите за да бъдат в session-а
+            // First load payment methods so they are in session
             $.ajax({
-                url: "' . $getMethodsUrl . '",
+                url: "{$getMethodsUrl}",
                 dataType: "json",
-                timeout: 10000, // 10 секунди timeout за да не виси безкрайно
+                timeout: 10000, // 10 seconds timeout to prevent hanging
                 success: function(paymentMethodsJson) {
                     try {
                         if (!paymentMethodsJson || paymentMethodsJson["error"]) {
@@ -196,7 +197,7 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
                             return;
                         }
                         
-                        // Проверяваме дали dskapi payment методът е наличен
+                        // Check if dskapi payment method is available
                         if (!paymentMethodsJson["payment_methods"] || 
                             !paymentMethodsJson["payment_methods"]["dskapi"] ||
                             !paymentMethodsJson["payment_methods"]["dskapi"]["option"] ||
@@ -206,20 +207,20 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
                             return;
                         }
                         
-                        // Сега записваме payment метода
+                        // Now save the payment method
                         $.ajax({
-                            url: "' . $saveUrl . '",
+                            url: "{$saveUrl}",
                             type: "post",
                             data: { payment_method: "dskapi.dskapi" },
                             dataType: "json",
                             contentType: "application/x-www-form-urlencoded",
-                            timeout: 10000, // 10 секунди timeout
+                            timeout: 10000, // 10 seconds timeout
                             success: function(json) {
                                 try {
                                     isSavingPayment = false;
                                     
                                     if (!json) {
-                                        console.warn("DSKAPI: Празен отговор от save");
+                                        console.warn("DSKAPI: Empty response from save");
                                         return;
                                     }
                                     
@@ -231,15 +232,15 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
                                     if (json["success"]) {
                                         paymentSaved = true;
                                         
-                                        // Обновяваме input полето с избрания payment метод
+                                        // Update input field with selected payment method
                                         const paymentMethodInput = document.querySelector("#input-payment-method");
                                         const paymentCodeInput = document.querySelector("#input-payment-code");
                                         
                                         if (paymentMethodInput && paymentCodeInput) {
-                                            // Задаваме кода
+                                            // Set the code
                                             paymentCodeInput.value = "dskapi.dskapi";
                                             
-                                            // Задаваме името от заредените payment методи
+                                            // Set the name from loaded payment methods
                                             const dskapiMethod = paymentMethodsJson["payment_methods"]["dskapi"];
                                             if (dskapiMethod["option"] && 
                                                 dskapiMethod["option"]["dskapi"] && 
@@ -247,10 +248,10 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
                                                 paymentMethodInput.value = dskapiMethod["option"]["dskapi"]["name"];
                                             }
                                             
-                                            // Обновяваме confirm секцията само ако елементът съществува
+                                            // Update confirm section only if element exists
                                             const confirmSection = document.querySelector("#checkout-confirm");
                                             if (confirmSection && typeof $ !== "undefined" && $.fn.load) {
-                                                $("#checkout-confirm").load("' . $confirmUrl . '");
+                                                $("#checkout-confirm").load("{$confirmUrl}");
                                             }
                                         }
                                     } else if (json["error"]) {
@@ -258,7 +259,7 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
                                     }
                                 } catch (e) {
                                     isSavingPayment = false;
-                                    console.error("DSKAPI: Грешка при обработка на save отговор:", e);
+                                    console.error("DSKAPI: Error processing save response:", e);
                                 }
                             },
                             error: function(xhr, ajaxOptions, thrownError) {
@@ -268,7 +269,7 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
                         });
                     } catch (e) {
                         isSavingPayment = false;
-                        console.error("DSKAPI: Грешка при обработка на getMethods отговор:", e);
+                        console.error("DSKAPI: Error processing getMethods response:", e);
                     }
                 },
                 error: function(xhr, ajaxOptions, thrownError) {
@@ -279,12 +280,12 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
             return true;
         } catch (e) {
             isSavingPayment = false;
-            console.error("DSKAPI: Грешка в autoSaveDskapiPayment:", e);
+            console.error("DSKAPI: Error in autoSaveDskapiPayment:", e);
             return false;
         }
     }
     
-    // Функция за автоматично избиране на dskapi radio бутона в popup-а (без автоматично изпращане)
+    // Function for automatically selecting dskapi radio button in popup (without automatic submission)
     function selectDskapiRadio() {
         try {
             const dskapiRadio = document.querySelector(\'input[name="payment_method"][value="dskapi.dskapi"]\');
@@ -294,20 +295,20 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
             }
             return false;
         } catch (e) {
-            console.warn("DSKAPI: Грешка при избиране на radio бутона:", e);
+            console.warn("DSKAPI: Error selecting radio button:", e);
             return false;
         }
     }
     
-    // Слушаме за отваряне на модалното прозорче
+    // Listen for modal window opening
     try {
         $(document).on("shown.bs.modal", "#modal-payment", function() {
             try {
-                // При отваряне на popup-а автоматично избираме ДСК радио бутона
+                // When popup opens, automatically select DSK radio button
                 setTimeout(function() {
                     try {
                         if (!selectDskapiRadio()) {
-                            // Ако не успеем веднага, опитваме се отново след кратко време
+                            // If we don't succeed immediately, try again after a short time
                             let attempts = 0;
                             const maxAttempts = 20;
                             const checkInterval = setInterval(function() {
@@ -318,120 +319,121 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
                                     }
                                 } catch (e) {
                                     clearInterval(checkInterval);
-                                    console.warn("DSKAPI: Грешка в checkInterval:", e);
+                                    console.warn("DSKAPI: Error in checkInterval:", e);
                                 }
                             }, 200);
                         }
                     } catch (e) {
-                        console.warn("DSKAPI: Грешка при избиране на radio бутона в popup:", e);
+                        console.warn("DSKAPI: Error selecting radio button in popup:", e);
                     }
                 }, 100);
             } catch (e) {
-                console.warn("DSKAPI: Грешка в modal event handler:", e);
+                console.warn("DSKAPI: Error in modal event handler:", e);
             }
         });
     } catch (e) {
-        console.warn("DSKAPI: Грешка при регистриране на modal event:", e);
+        console.warn("DSKAPI: Error registering modal event:", e);
     }
     
-    // Опитваме се да запишем payment метода автоматично при зареждане на страницата
-    // но само ако shipping е вече избран
+    // Try to save payment method automatically on page load
+    // but only if shipping is already selected
     try {
         $(document).ready(function() {
             try {
-                // Проверяваме дали shipping е избран веднага
+                // Check if shipping is selected immediately
                 if (isShippingSelected()) {
                     setTimeout(function() {
                         try {
                             autoSaveDskapiPayment();
                         } catch (e) {
-                            console.warn("DSKAPI: Грешка при опит за автоматично записване при зареждане:", e);
+                            console.warn("DSKAPI: Error attempting automatic save on load:", e);
                         }
                     }, 1000);
                 }
                 
-                // Слушаме за успешно записване на shipping метода чрез intercept на AJAX заявките
-                // Когато shipping се запише успешно (при първи избор или при смяна), опитваме се да запишем payment метода
+                // Listen for successful shipping method save by intercepting AJAX requests
+                // When shipping is saved successfully (on first selection or change), try to save payment method
                 $(document).ajaxSuccess(function(event, xhr, settings) {
                     try {
-                        // Проверяваме дали има settings и url
+                        // Check if settings and url exist
                         if (!settings || !settings.url) {
                             return;
                         }
                         
-                        // Слушаме за успешно записване на shipping метода
+                        // Listen for successful shipping method save
                         if (settings.url.indexOf("checkout/shipping_method.save") !== -1) {
-                            // Проверяваме дали заявката е успешна
+                            // Check if request was successful
                             try {
                                 const response = typeof xhr.responseText === "string" ? JSON.parse(xhr.responseText) : xhr.responseText;
                                 if (response && response.success) {
-                                    // Ресетваме флага за payment за да можем да го запишем отново при всяка смяна на shipping
+                                    // Reset payment flag so we can save it again on each shipping change
                                     paymentSaved = false;
                                     
-                                    // Изчакваме завършването на зареждането на confirm секцията преди да опитаме да запишем payment метода
-                                    // Това гарантира че OpenCart е завършил всичките си операции
+                                    // Wait for confirm section loading to complete before trying to save payment method
+                                    // This ensures OpenCart has finished all its operations
                                     let confirmLoadAttempts = 0;
                                     const maxConfirmAttempts = 10;
                                     
                                     const checkConfirmAndSave = setInterval(function() {
                                         try {
                                             confirmLoadAttempts++;
-                                            // Проверяваме дали confirm секцията е заредена (има съдържание)
+                                            // Check if confirm section is loaded (has content)
                                             const confirmSection = document.querySelector("#checkout-confirm");
                                             if (confirmSection && 
                                                 confirmSection.innerHTML && 
                                                 confirmSection.innerHTML.trim() !== "" && 
                                                 isShippingSelected()) {
                                                 clearInterval(checkConfirmAndSave);
-                                                // Изчакваме още малко за да се стабилизира всичко
+                                                // Wait a bit more for everything to stabilize
                                                 setTimeout(function() {
                                                     try {
                                                         if (!isPaymentMethodSaved()) {
                                                             autoSaveDskapiPayment();
                                                         }
                                                     } catch (e) {
-                                                        console.warn("DSKAPI: Грешка при опит за запис след confirm зареждане:", e);
+                                                        console.warn("DSKAPI: Error attempting save after confirm load:", e);
                                                     }
                                                 }, 300);
                                             } else if (confirmLoadAttempts >= maxConfirmAttempts) {
                                                 clearInterval(checkConfirmAndSave);
-                                                // Ако не успеем да изчакаме confirm, опитваме се директно (fallback)
+                                                // If we can't wait for confirm, try directly (fallback)
                                                 setTimeout(function() {
                                                     try {
                                                         if (isShippingSelected() && !isPaymentMethodSaved()) {
                                                             autoSaveDskapiPayment();
                                                         }
                                                     } catch (e) {
-                                                        console.warn("DSKAPI: Грешка при fallback опит за запис:", e);
+                                                        console.warn("DSKAPI: Error in fallback save attempt:", e);
                                                     }
                                                 }, 1000);
                                             }
                                         } catch (e) {
                                             clearInterval(checkConfirmAndSave);
-                                            console.warn("DSKAPI: Грешка в checkConfirmAndSave interval:", e);
+                                            console.warn("DSKAPI: Error in checkConfirmAndSave interval:", e);
                                         }
                                     }, 200);
                                 }
                             } catch (e) {
-                                // Игнорираме грешки при парсиране на JSON (може да не е JSON отговор)
-                                console.warn("DSKAPI: Грешка при парсиране на shipping save отговор:", e);
+                                // Ignore JSON parsing errors (may not be JSON response)
+                                console.warn("DSKAPI: Error parsing shipping save response:", e);
                             }
                         }
                     } catch (e) {
-                        console.warn("DSKAPI: Грешка в ajaxSuccess handler:", e);
+                        console.warn("DSKAPI: Error in ajaxSuccess handler:", e);
                     }
                 });
             } catch (e) {
-                console.error("DSKAPI: Грешка в document.ready:", e);
+                console.error("DSKAPI: Error in document.ready:", e);
             }
         });
     } catch (e) {
-        console.error("DSKAPI: Грешка при инициализация:", e);
+        console.error("DSKAPI: Error in initialization:", e);
     }
 })();
-</script>';
+</script>
+JS;
 
-        // Добавяме скрипта преди затварящия </body> таг
+        // Add script before closing </body> tag
         $output = str_replace('</body>', $script . '</body>', $output);
     }
 }
