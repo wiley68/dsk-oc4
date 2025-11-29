@@ -34,6 +34,9 @@ class Dskapi extends \Opencart\System\Engine\Controller
         $dskapi_cid = $this->config->get($this->module . '_cid');
         $dskapi_status = $this->config->get($this->module . '_status');
         $paramsdskapi = $this->makeApiRequest('/function/getminmax.php?cid=' . $dskapi_cid);
+        if (!$paramsdskapi || !is_array($paramsdskapi) || empty($paramsdskapi)) {
+            return '';
+        }
 
         $this->load->model('checkout/order');
         $order_id = $this->session->data['order_id'];
@@ -52,6 +55,14 @@ class Dskapi extends \Opencart\System\Engine\Controller
         if (($dskapi_purcent == 0) && ($dskapi_vnoski_default <= 6)) {
             $data['dskapi_minstojnost'] = (float) $data['dskapi_min_000'];
         }
+
+        // Проверка дали плащането е валидно
+        $data['dskapi_is_valid'] = (
+            $dskapi_status &&
+            $data['dskapi_status_cp'] != 0 &&
+            $dskapi_price >= $data['dskapi_minstojnost'] &&
+            $dskapi_price <= $data['dskapi_maxstojnost']
+        );
 
         return $this->load->view('extension/mt_dskapi_credit/payment/dskapi', $data);
     }

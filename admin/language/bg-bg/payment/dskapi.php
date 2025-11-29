@@ -1,9 +1,9 @@
 <?php
-$_['heading_title'] = 'DSK Credit';
-$_['text_description'] = 'DSK Credit purchases on Credit';
+$_['heading_title'] = 'Банка ДСК покупки на Кредит';
+$_['text_description'] = 'Банка ДСК покупки на Кредит';
 $_['text_home'] = 'Начало';
 $_['text_extension'] = 'Разплащане';
-$_['error_permission'] = 'Предупреждение: Нямате право да модифицирате плащането DSK Credit!';
+$_['error_permission'] = 'Предупреждение: Нямате право да модифицирате плащането Банка ДСК!';
 $_['text_success'] = 'Успех: Успешно направихте промените!';
 $_['dskapi_button_save'] = 'Запиши';
 $_['dskapi_button_cancel'] = 'Откажи';

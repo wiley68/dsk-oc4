@@ -1,20 +1,11 @@
-{% if (
-(not dskapi_status) or
-(dskapi_status_cp == 0) or
-(dskapi_price <
-	dskapi_minstojnost)
-	or
-	(dskapi_price
-> dskapi_maxstojnost)
-	)
-	%}
+{% if not dskapi_is_valid %}
 	{% set btn_status = 'disabled' %}
 	<p style="font-weight:bold;color:red;">Сумата във Вашата кошница е по-малка или по-голяма от разрешената за
 		закупуване на изплащане. Минималната сума за покупка на изплащане е: {{dskapi_minstojnost}} лв. Максималната
 		сума за покупка на изплащане е: {{dskapi_maxstojnost}} лв.</p>
-	{% else %}
+{% else %}
 	{% set btn_status = '' %}
-	{% endif %}
+{% endif %}
 	С избора си да финансирате покупката чрез Банка ДСК Вие декларирате, че сте запознат с Информацията относно
 	обработването на лични данни на физически лица от Банка ДСК АД.
 	<a
