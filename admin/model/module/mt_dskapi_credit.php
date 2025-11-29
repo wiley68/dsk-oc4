@@ -1,11 +1,11 @@
 <?php
 
-namespace Opencart\Admin\Model\Module\MtDskapiCredit;
+namespace Opencart\Admin\Model\Extension\MtDskapiCredit\Module;
 
 /**
  * Class MtDskapiCredit
  *
- * @package Opencart\Admin\Model\Module\MtDskapiCredit
+ * @package Opencart\Admin\Model\Extension\MtDskapiCredit\Module
  */
 class MtDskapiCredit extends \Opencart\System\Engine\Model
 {
