@@ -9,6 +9,7 @@ namespace Opencart\Catalog\Model\Extension\MtDskapiCredit\Payment;
  */
 class Dskapi extends \Opencart\System\Engine\Model
 {
+    private $module = 'module_mt_dskapi_credit';
     public function getMethods(array $address = []): array
     {
         $this->load->language('extension/mt_dskapi_credit/payment/dskapi');
@@ -38,6 +39,11 @@ class Dskapi extends \Opencart\System\Engine\Model
             } else {
                 $status = false;
             }
+        }
+
+        $dskapi_status = $this->config->get($this->module . '_status');
+        if (!$dskapi_status) {
+            return [];
         }
 
         $method_data = [];

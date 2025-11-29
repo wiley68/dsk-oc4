@@ -30,210 +30,225 @@ class DskapiStart extends \Opencart\System\Engine\Controller
         ];
 
         $dskapi_cid = $this->config->get($this->module . '_cid');
+
+        // Прочитане на order_id от GET параметър или от сесията и веднага изтриване от сесията
         if (isset($this->request->get['order_id'])) {
             $order_id = (string)$this->request->get['order_id'];
+        } elseif (isset($this->session->data['order_id'])) {
+            $order_id = (string)$this->session->data['order_id'];
         } else {
             $order_id = 0;
         }
+
+        // Веднага изтриване на order_id от сесията, за да предотвратим използването на стари данни
+        unset($this->session->data['order_id']);
+
         if ($order_id != 0) {
             // Proceed to bnpl Process    
             $this->load->model('checkout/order');
             $this->load->model('catalog/product');
             $this->load->model('tool/image');
             $order = $this->model_checkout_order->getOrder($order_id);
-            $products = $this->cart->getProducts();
 
-            $dskapi_fname = isset($order['firstname']) ? trim($order['firstname'], " ") : '';
-            $dskapi_lastname = isset($order['lastname']) ? trim($order['lastname'], " ") : '';
-            $dskapi_phone = isset($order['telephone']) ? $order['telephone'] : '';
-            $dskapi_email = isset($order['email']) ? $order['email'] : '';
-            $dskapi_billing_city = isset($order['payment_city']) ? $order['payment_city'] : '';
-            $dskapi_billing_address_1 = isset($order['payment_address_1']) ? $order['payment_address_1'] : '';
-            $dskapi_billing_postcode = isset($order['payment_postcode']) ? $order['payment_postcode'] : '';
-            $dskapi_shipping_city = isset($order['shipping_city']) ? $order['shipping_city'] : '';
-            $dskapi_shipping_address_1 = isset($order['shipping_address_1']) ? $order['shipping_address_1'] : '';
-
-            $dskapi_total = isset($order['total']) ? $order['total'] : '';
-
-            $dskapi_eur = 0;
-            $paramsdskapieur = $this->makeApiRequest('/function/geteur.php?cid=' . $dskapi_cid);
-
-            $dskapi_currency_code = isset($order['currency_code']) ? $order['currency_code'] : 'BGN';
-            $dskapi_currency_code_send = 0;
-            if ($paramsdskapieur != null) {
-                $dskapi_eur = (int)$paramsdskapieur['dsk_eur'];
-                switch ($dskapi_eur) {
-                    case 0:
-                        break;
-                    case 1:
-                        $dskapi_currency_code_send = 0;
-                        if ($dskapi_currency_code == "EUR") {
-                            $dskapi_total = number_format($dskapi_total * 1.95583, 2, ".", "");
-                        }
-                        break;
-                    case 2:
-                        $dskapi_currency_code_send = 1;
-                        if ($dskapi_currency_code == "BGN") {
-                            $dskapi_total = number_format($dskapi_total / 1.95583, 2, ".", "");
-                        }
-                        break;
-                }
-            }
-
-            $ident = 0;
-            $products_id = '';
-            $products_name = '';
-            $products_q = '';
-            $products_p = '';
-            $products_c = '';
-            $products_m = '';
-            $products_i = '';
-            foreach ($products as $product) {
-                $products_id .= $product['product_id'];
-                $products_id .= '_';
-                $products_q .= $product['quantity'];
-                $products_q .= '_';
-
-                $products_p_temp = $this->tax->calculate($product['price'], $product['tax_class_id'], $this->config->get('config_tax'));
-                switch ($dskapi_eur) {
-                    case 0:
-                        break;
-                    case 1:
-                        if ($dskapi_currency_code == "EUR") {
-                            $products_p_temp = number_format($products_p_temp * 1.95583, 2, ".", "");
-                        }
-                        break;
-                    case 2:
-                        if ($dskapi_currency_code == "BGN") {
-                            $products_p_temp = number_format($products_p_temp / 1.95583, 2, ".", "");
-                        }
-                        break;
-                }
-                $products_p .= $products_p_temp;
-                $products_p .= '_';
-
-                $products_name .= str_replace('"', '', str_replace("'", "", htmlspecialchars_decode($product['name'], ENT_QUOTES)));
-                $products_name .= '_';
-                $products_cat = $this->model_catalog_product->getCategories($product['product_id']);
-                foreach ($products_cat as $product_cat) {
-                    $products_c = $product_cat['category_id'];
-                }
-                $products_c .= '_';
-                $product_bnpl = $this->model_catalog_product->getProduct($product['product_id']);
-                $products_m .= $product_bnpl['manufacturer'] ?? '';
-                $products_m .= '_';
-                $bnpl_image = $this->model_tool_image->resize($product_bnpl['image'], 800, 600);
-                $bnpl_imagePath_64 = base64_encode($bnpl_image);
-                $products_i .= $bnpl_imagePath_64;
-                $products_i .= '_';
-                $ident++;
-            }
-
-            $products_id = trim($products_id, "_");
-            $products_q = trim($products_q, "_");
-            $products_p = trim($products_p, "_");
-            $products_c = trim($products_c, "_");
-            $products_m = trim($products_m, "_");
-            $products_name = trim($products_name, "_");
-            $products_i = trim($products_i, "_");
-
-            $installInfo = json_decode(
-                file_get_contents(DIR_EXTENSION . 'mt_dskapi_credit/install.json'),
-                true
-            );
-            $dskapi_version = $installInfo['version'] ?? '';
-
-            $dskapi_post = [
-                'unicid' => $dskapi_cid,
-                'first_name' => $dskapi_fname,
-                'last_name' => $dskapi_lastname,
-                'phone' => $dskapi_phone,
-                'email' => $dskapi_email,
-                'address2' => str_replace('"', '', str_replace("'", "", htmlspecialchars_decode($dskapi_billing_address_1, ENT_QUOTES))),
-                'address2city' => str_replace('"', '', str_replace("'", "", htmlspecialchars_decode($dskapi_billing_city, ENT_QUOTES))),
-                'postcode' => $dskapi_billing_postcode,
-                'price' => $dskapi_total,
-                'address' => str_replace('"', '', str_replace("'", "", htmlspecialchars_decode($dskapi_shipping_address_1, ENT_QUOTES))),
-                'addresscity' => str_replace('"', '', str_replace("'", "", htmlspecialchars_decode($dskapi_shipping_city, ENT_QUOTES))),
-                'products_id' => $products_id,
-                'products_name' => $products_name,
-                'products_q' => $products_q,
-                'type_client' => $this->isMobileDevice() ? 1 : 0,
-                'products_p' => $products_p,
-                'version' => $dskapi_version,
-                'shoporder_id' => $order_id,
-                'products_c' => $products_c,
-                'products_m' => $products_m,
-                'products_i' => $products_i,
-                'currency' => $dskapi_currency_code_send
-            ];
-
-            $dskapi_plaintext = json_encode($dskapi_post);
-            $dskapi_publicKey = openssl_pkey_get_public(file_get_contents(DIR_EXTENSION . 'mt_dskapi_credit/system/keys/pub.pem'));
-            $dskapi_a_key = openssl_pkey_get_details($dskapi_publicKey);
-            $dskapi_chunkSize = ceil($dskapi_a_key['bits'] / 8) - 11;
-            $dskapi_output = '';
-            while ($dskapi_plaintext) {
-                $dskapi_chunk = substr($dskapi_plaintext, 0, $dskapi_chunkSize);
-                $dskapi_plaintext = substr($dskapi_plaintext, $dskapi_chunkSize);
-                $dskapi_encrypted = '';
-                if (!openssl_public_encrypt($dskapi_chunk, $dskapi_encrypted, $dskapi_publicKey)) {
-                    die('Failed to encrypt data');
-                }
-                $dskapi_output .= $dskapi_encrypted;
-            }
-            if (version_compare(PHP_VERSION, '8.0.0', '<')) {
-                openssl_free_key($dskapi_publicKey);
-            }
-            $dskapi_output64 = base64_encode($dskapi_output);
-
-            // Create dskapi order i data base
-            $paramsdskapiadd = $this->makeApiRequest('/function/addorders.php', 5, ['data' => $dskapi_output64]);
-
-            if ((!empty($paramsdskapiadd)) && isset($paramsdskapiadd['order_id']) && ($paramsdskapiadd['order_id'] != 0)) {
-                // save to dskapiorders file
-                // TODO: Implement svae order data to db table
-
-                $redirect_url = $this->dskapiLiveUrl . '/application_' . ($this->isMobileDevice() ? 'm_' : '') . 'step1.php?oid=' . $paramsdskapiadd['order_id'] . '&cid=' . $dskapi_cid;
-
-                $data['success'] = true;
-                $data['redirect_url'] = $redirect_url;
-                unset($this->session->data['order_id']);
-                $this->cart->clear();
+            if (!$order) {
+                $data['redirect_url'] = $this->url->link('checkout/failure', 'language=' . $this->config->get('config_language'), true);
+                $data['success'] = false;
             } else {
-                if (empty($paramsdskapiadd)) {
+                // Продължаваме само ако ордерът съществува
+                $products = $this->cart->getProducts();
+
+                $dskapi_fname = isset($order['firstname']) ? trim($order['firstname'], " ") : '';
+                $dskapi_lastname = isset($order['lastname']) ? trim($order['lastname'], " ") : '';
+                $dskapi_phone = isset($order['telephone']) ? $order['telephone'] : '';
+                $dskapi_email = isset($order['email']) ? $order['email'] : '';
+                $dskapi_billing_city = isset($order['payment_city']) ? $order['payment_city'] : '';
+                $dskapi_billing_address_1 = isset($order['payment_address_1']) ? $order['payment_address_1'] : '';
+                $dskapi_billing_postcode = isset($order['payment_postcode']) ? $order['payment_postcode'] : '';
+                $dskapi_shipping_city = isset($order['shipping_city']) ? $order['shipping_city'] : '';
+                $dskapi_shipping_address_1 = isset($order['shipping_address_1']) ? $order['shipping_address_1'] : '';
+
+                $dskapi_total = isset($order['total']) ? $order['total'] : '';
+
+                $dskapi_eur = 0;
+                $paramsdskapieur = $this->makeApiRequest('/function/geteur.php?cid=' . $dskapi_cid);
+
+                $dskapi_currency_code = isset($order['currency_code']) ? $order['currency_code'] : 'BGN';
+                $dskapi_currency_code_send = 0;
+                if ($paramsdskapieur != null) {
+                    $dskapi_eur = (int)$paramsdskapieur['dsk_eur'];
+                    switch ($dskapi_eur) {
+                        case 0:
+                            break;
+                        case 1:
+                            $dskapi_currency_code_send = 0;
+                            if ($dskapi_currency_code == "EUR") {
+                                $dskapi_total = number_format($dskapi_total * 1.95583, 2, ".", "");
+                            }
+                            break;
+                        case 2:
+                            $dskapi_currency_code_send = 1;
+                            if ($dskapi_currency_code == "BGN") {
+                                $dskapi_total = number_format($dskapi_total / 1.95583, 2, ".", "");
+                            }
+                            break;
+                    }
+                }
+
+                $ident = 0;
+                $products_id = '';
+                $products_name = '';
+                $products_q = '';
+                $products_p = '';
+                $products_c = '';
+                $products_m = '';
+                $products_i = '';
+                foreach ($products as $product) {
+                    $products_id .= $product['product_id'];
+                    $products_id .= '_';
+                    $products_q .= $product['quantity'];
+                    $products_q .= '_';
+
+                    $products_p_temp = $this->tax->calculate($product['price'], $product['tax_class_id'], $this->config->get('config_tax'));
+                    switch ($dskapi_eur) {
+                        case 0:
+                            break;
+                        case 1:
+                            if ($dskapi_currency_code == "EUR") {
+                                $products_p_temp = number_format($products_p_temp * 1.95583, 2, ".", "");
+                            }
+                            break;
+                        case 2:
+                            if ($dskapi_currency_code == "BGN") {
+                                $products_p_temp = number_format($products_p_temp / 1.95583, 2, ".", "");
+                            }
+                            break;
+                    }
+                    $products_p .= $products_p_temp;
+                    $products_p .= '_';
+
+                    $products_name .= str_replace('"', '', str_replace("'", "", htmlspecialchars_decode($product['name'], ENT_QUOTES)));
+                    $products_name .= '_';
+                    $products_cat = $this->model_catalog_product->getCategories($product['product_id']);
+                    foreach ($products_cat as $product_cat) {
+                        $products_c = $product_cat['category_id'];
+                    }
+                    $products_c .= '_';
+                    $product_bnpl = $this->model_catalog_product->getProduct($product['product_id']);
+                    $products_m .= $product_bnpl['manufacturer'] ?? '';
+                    $products_m .= '_';
+                    $bnpl_image = $this->model_tool_image->resize($product_bnpl['image'], 800, 600);
+                    $bnpl_imagePath_64 = base64_encode($bnpl_image);
+                    $products_i .= $bnpl_imagePath_64;
+                    $products_i .= '_';
+                    $ident++;
+                }
+
+                $products_id = trim($products_id, "_");
+                $products_q = trim($products_q, "_");
+                $products_p = trim($products_p, "_");
+                $products_c = trim($products_c, "_");
+                $products_m = trim($products_m, "_");
+                $products_name = trim($products_name, "_");
+                $products_i = trim($products_i, "_");
+
+                $installInfo = json_decode(
+                    file_get_contents(DIR_EXTENSION . 'mt_dskapi_credit/install.json'),
+                    true
+                );
+                $dskapi_version = $installInfo['version'] ?? '';
+
+                $dskapi_post = [
+                    'unicid' => $dskapi_cid,
+                    'first_name' => $dskapi_fname,
+                    'last_name' => $dskapi_lastname,
+                    'phone' => $dskapi_phone,
+                    'email' => $dskapi_email,
+                    'address2' => str_replace('"', '', str_replace("'", "", htmlspecialchars_decode($dskapi_billing_address_1, ENT_QUOTES))),
+                    'address2city' => str_replace('"', '', str_replace("'", "", htmlspecialchars_decode($dskapi_billing_city, ENT_QUOTES))),
+                    'postcode' => $dskapi_billing_postcode,
+                    'price' => $dskapi_total,
+                    'address' => str_replace('"', '', str_replace("'", "", htmlspecialchars_decode($dskapi_shipping_address_1, ENT_QUOTES))),
+                    'addresscity' => str_replace('"', '', str_replace("'", "", htmlspecialchars_decode($dskapi_shipping_city, ENT_QUOTES))),
+                    'products_id' => $products_id,
+                    'products_name' => $products_name,
+                    'products_q' => $products_q,
+                    'type_client' => $this->isMobileDevice() ? 1 : 0,
+                    'products_p' => $products_p,
+                    'version' => $dskapi_version,
+                    'shoporder_id' => $order_id,
+                    'products_c' => $products_c,
+                    'products_m' => $products_m,
+                    'products_i' => $products_i,
+                    'currency' => $dskapi_currency_code_send
+                ];
+
+                $dskapi_plaintext = json_encode($dskapi_post);
+                $dskapi_publicKey = openssl_pkey_get_public(file_get_contents(DIR_EXTENSION . 'mt_dskapi_credit/system/keys/pub.pem'));
+                $dskapi_a_key = openssl_pkey_get_details($dskapi_publicKey);
+                $dskapi_chunkSize = ceil($dskapi_a_key['bits'] / 8) - 11;
+                $dskapi_output = '';
+                while ($dskapi_plaintext) {
+                    $dskapi_chunk = substr($dskapi_plaintext, 0, $dskapi_chunkSize);
+                    $dskapi_plaintext = substr($dskapi_plaintext, $dskapi_chunkSize);
+                    $dskapi_encrypted = '';
+                    if (!openssl_public_encrypt($dskapi_chunk, $dskapi_encrypted, $dskapi_publicKey)) {
+                        die('Failed to encrypt data');
+                    }
+                    $dskapi_output .= $dskapi_encrypted;
+                }
+                if (version_compare(PHP_VERSION, '8.0.0', '<')) {
+                    openssl_free_key($dskapi_publicKey);
+                }
+                $dskapi_output64 = base64_encode($dskapi_output);
+
+                // Create dskapi order i data base
+                $paramsdskapiadd = $this->makeApiRequest('/function/addorders.php', 5, ['data' => $dskapi_output64]);
+
+                if ((!empty($paramsdskapiadd)) && isset($paramsdskapiadd['order_id']) && ($paramsdskapiadd['order_id'] != 0)) {
                     // save to dskapiorders file
                     // TODO: Implement svae order data to db table
 
-                    $data['comunication'] = 0;
-                    $data['success'] = false;
+                    $redirect_url = $this->dskapiLiveUrl . '/application_' . ($this->isMobileDevice() ? 'm_' : '') . 'step1.php?oid=' . $paramsdskapiadd['order_id'] . '&cid=' . $dskapi_cid;
 
-                    if ($this->config->get('config_mail_engine')) {
-                        $mail_engine = $this->config->get('config_mail_engine');
-                        if ($mail_engine === 'smtp') {
-                            $mail_option = [
-                                'parameter'     => $this->config->get('config_mail_parameter'),
-                                'smtp_hostname' => $this->config->get('config_mail_smtp_hostname'),
-                                'smtp_username' => $this->config->get('config_mail_smtp_username'),
-                                'smtp_password' => html_entity_decode($this->config->get('config_mail_smtp_password'), ENT_QUOTES, 'UTF-8'),
-                                'smtp_port'     => $this->config->get('config_mail_smtp_port'),
-                                'smtp_timeout'  => $this->config->get('config_mail_smtp_timeout')
-                            ];
-                        } else {
-                            $mail_option = [
-                                'parameter' => $this->config->get('config_mail_parameter')
-                            ];
-                        }
-                        $mail = new \Opencart\System\Library\Mail($mail_engine, $mail_option);
-                        $mail->setFrom($this->config->get('config_mail_smtp_username'));
-                        $mail->setSender($this->config->get('config_mail_smtp_username'));
-                        $mail->setSubject('Проблем комуникация заявка КП DSK Credit');
-                        $mail->setText(json_encode($dskapi_post, JSON_PRETTY_PRINT));
-                        $mail->setTo($this->dskapiMail);
-                    }
+                    $data['success'] = true;
+                    $data['redirect_url'] = $redirect_url;
+                    // order_id вече е изтрит от сесията в началото на метода
+                    $this->cart->clear();
                 } else {
-                    $data['comunication'] = 1;
-                    $data['success'] = false;
+                    if (empty($paramsdskapiadd)) {
+                        // save to dskapiorders file
+                        // TODO: Implement svae order data to db table
+
+                        $data['comunication'] = 0;
+                        $data['success'] = false;
+
+                        if ($this->config->get('config_mail_engine')) {
+                            $mail_engine = $this->config->get('config_mail_engine');
+                            if ($mail_engine === 'smtp') {
+                                $mail_option = [
+                                    'parameter'     => $this->config->get('config_mail_parameter'),
+                                    'smtp_hostname' => $this->config->get('config_mail_smtp_hostname'),
+                                    'smtp_username' => $this->config->get('config_mail_smtp_username'),
+                                    'smtp_password' => html_entity_decode($this->config->get('config_mail_smtp_password'), ENT_QUOTES, 'UTF-8'),
+                                    'smtp_port'     => $this->config->get('config_mail_smtp_port'),
+                                    'smtp_timeout'  => $this->config->get('config_mail_smtp_timeout')
+                                ];
+                            } else {
+                                $mail_option = [
+                                    'parameter' => $this->config->get('config_mail_parameter')
+                                ];
+                            }
+                            $mail = new \Opencart\System\Library\Mail($mail_engine, $mail_option);
+                            $mail->setFrom($this->config->get('config_mail_smtp_username'));
+                            $mail->setSender($this->config->get('config_mail_smtp_username'));
+                            $mail->setSubject('Проблем комуникация заявка КП DSK Credit');
+                            $mail->setText(json_encode($dskapi_post, JSON_PRETTY_PRINT));
+                            $mail->setTo($this->dskapiMail);
+                        }
+                    } else {
+                        $data['comunication'] = 1;
+                        $data['success'] = false;
+                    }
                 }
             }
         } else {
