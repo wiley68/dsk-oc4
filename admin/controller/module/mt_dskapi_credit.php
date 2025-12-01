@@ -18,6 +18,7 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
     private $event_cart_view = 'extension/mt_dskapi_credit/event/mt_dskapi_credit_cart_view';
     private $event_checkout = 'extension/mt_dskapi_credit/event/mt_dskapi_credit_checkout';
     private $event_order = 'extension/mt_dskapi_credit/event/mt_dskapi_credit_order';
+    private $event_content_top = 'extension/mt_dskapi_credit/event/mt_dskapi_credit_content_top';
 
     /**
      * Displays the module settings form
@@ -238,6 +239,27 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
             'sort_order' => 0
         ]);
 
+        // Event hooks за content_top - добавяне на рекламна информация на началната страница
+        $this->model_setting_event->deleteEventByCode($this->module . '_before_content_top');
+        $this->model_setting_event->addEvent([
+            'code' => $this->module . '_before_content_top',
+            'description' => $this->description . '- добавя данни за рекламна информация в content_top контролера.',
+            'trigger' => 'catalog/controller/common/content_top/before',
+            'action' => $this->event_content_top . $dsk_separator . 'init',
+            'status' => true,
+            'sort_order' => 0
+        ]);
+
+        $this->model_setting_event->deleteEventByCode($this->module . '_after_content_top_view');
+        $this->model_setting_event->addEvent([
+            'code' => $this->module . '_after_content_top_view',
+            'description' => $this->description . '- добавя HTML за рекламна информация в content_top темплейта.',
+            'trigger' => 'catalog/view/common/content_top/after',
+            'action' => $this->event_content_top . $dsk_separator . 'addHtml',
+            'status' => true,
+            'sort_order' => 0
+        ]);
+
         $this->load->model('user/user_group');
         $groups = $this->model_user_user_group->getUserGroups();
 
@@ -251,6 +273,8 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
             $this->model_user_user_group->addPermission($group['user_group_id'], 'access', $this->event_checkout);
             // Permissions за event hooks за админ панела
             $this->model_user_user_group->addPermission($group['user_group_id'], 'access', $this->event_order);
+            // Permissions за event hooks за content_top
+            $this->model_user_user_group->addPermission($group['user_group_id'], 'access', $this->event_content_top);
         }
     }
 
@@ -290,6 +314,8 @@ class MtDskapiCredit extends \Opencart\System\Engine\Controller
             $this->model_setting_event->deleteEventByCode($this->module . '_admin_order_list_view');
             $this->model_setting_event->deleteEventByCode($this->module . '_admin_order_info');
             $this->model_setting_event->deleteEventByCode($this->module . '_admin_order_info_view');
+            $this->model_setting_event->deleteEventByCode($this->module . '_before_content_top');
+            $this->model_setting_event->deleteEventByCode($this->module . '_after_content_top_view');
         }
 
         $this->load->model('extension/mt_dskapi_credit/module/mt_dskapi_credit');

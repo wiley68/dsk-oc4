@@ -1,0 +1,116 @@
+@font-face {
+  font-family: 'squad-regular';
+  src: url('Squad-Regular.woff2') format('woff2'),
+    url('Squad-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'squad-bold';
+  src: url('Squad-Bold.woff2') format('woff2'),
+    url('Squad-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+}
+/* dskapi float */
+.dskapi_float {
+  z-index: 999;
+  position: fixed;
+  width: 60px;
+  height: 60px;
+  top: calc(100% / 2 + 130px);
+  left: 0px;
+  background-color: #ffffff;
+  border-top: 1px solid #006648;
+  border-right: 1px solid #006648;
+  border-bottom: 1px solid #006648;
+  color: #fff;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  text-align: center;
+  box-shadow: 2px 2px 3px #999;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.dskapi-my-float {
+  width: 40px;
+  height: 35px;
+}
+.dskapi-label-container {
+  z-index: 999;
+  position: fixed;
+  top: calc(100% / 2 + 30px);
+  left: 67px;
+  display: table;
+  visibility: hidden;
+}
+.dskapi-label-text {
+  width: 410px;
+  height: 260px;
+  color: #006648;
+  vertical-align: top;
+  padding-left: 5px;
+  border-radius: 14.5px;
+  background-color: #ffffff;
+  overflow: none;
+}
+.dskapi-label-text-mask {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 14.5px;
+  background-color: #ffffff;
+  -webkit-box-shadow: 0px 0px 30px 0px #000000;
+  box-shadow: 0px 0px 30px 0px #000000;
+}
+.dskapi_header {
+  width: 100%;
+  margin: 0 0 7.7px;
+  border-radius: 14.5px 14.5px 0px 0px;
+  object-fit: contain;
+}
+p.dskapi_txt1 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  padding: 5px 15px;
+  margin: 0px;
+  font-family: squad-bold;
+  font-size: 18px;
+  line-height: 18px;
+  text-align: center;
+  color: #006648;
+  background-color: white;
+}
+p.dskapi_txt2 {
+  width: 100%;
+  padding: 0px 15px;
+  margin: 0px;
+  font-family: squad-regular;
+  font-size: 12px;
+  line-height: 12px;
+  text-align: center;
+  color: #414546;
+  background-color: white;
+}
+p.dskapi-label-text-a {
+  width: 100%;
+  font-family: squad-regular;
+  font-weight: 300;
+  font-size: 14px;
+  padding: 5px 15px 0px 15px;
+  text-align: center;
+  text-decoration: underline;
+  color: #52ae30;
+  cursor: pointer;
+}
+p.dskapi-label-text-a:hover {
+  color: #52ae30;
+}
+p.dskapi-label-text-a:visited {
+  color: #52ae30;
+}
+/* dskapi float */
