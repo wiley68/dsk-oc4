@@ -48,11 +48,8 @@ class Dskapi extends \Opencart\System\Engine\Controller
     {
         $this->load->language('extension/mt_dskapi_credit/payment/dskapi');
 
-        // Load CSS styles and JavaScript for interest schemes popup
-        if ($this->config->get($this->module . '_status')) {
-            $this->document->addStyle('extension/mt_dskapi_credit/catalog/view/stylesheet/dskapi_cart.css?ver=' . filemtime(DIR_EXTENSION . 'mt_dskapi_credit/catalog/view/stylesheet/dskapi_cart.css'));
-            $this->document->addScript('extension/mt_dskapi_credit/catalog/view/javascript/dskapi_checkout.js?ver=' . filemtime(DIR_EXTENSION . 'mt_dskapi_credit/catalog/view/javascript/dskapi_checkout.js'));
-        }
+        // Note: CSS and JavaScript are loaded inline in the template
+        // because OpenCart 4.x loads payment methods via AJAX and external files don't execute
 
         $data['language'] = $this->config->get('config_language');
 
@@ -200,6 +197,11 @@ class Dskapi extends \Opencart\System\Engine\Controller
         $data['dskapi_gap_popup'] = $this->config->get($this->module . '_gap_popup') ?? 0;
 
         $data['DSKAPI_VERSION'] = $dskapi_version;
+
+        // Generate absolute path for font files (for inline CSS)
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        $data['dskapi_fonts_path'] = $protocol . $host . '/extension/mt_dskapi_credit/catalog/view/stylesheet/';
 
         return $this->load->view('extension/mt_dskapi_credit/payment/dskapi', $data);
     }

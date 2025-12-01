@@ -11,6 +11,343 @@
 	{% set btn_status = '' %}
 {% endif %}
 {% if dskapi_is_valid %}
+	<style type="text/css">
+		@font-face {
+			font-family: 'squad-regular';
+			src: url('{{dskapi_fonts_path}}Squad-Regular.woff2') format('woff2'),
+				url('{{dskapi_fonts_path}}Squad-Regular.woff') format('woff');
+			font-weight: normal;
+			font-style: normal;
+		}
+		@font-face {
+			font-family: 'squad-bold';
+			src: url('{{dskapi_fonts_path}}Squad-Bold.woff2') format('woff2'),
+				url('{{dskapi_fonts_path}}Squad-Bold.woff') format('woff');
+			font-weight: bold;
+			font-style: normal;
+		}
+		@font-face {
+			font-family: 'squad-light';
+			src: url('{{dskapi_fonts_path}}Squad-Light.woff2') format('woff2'),
+				url('{{dskapi_fonts_path}}Squad-Light.woff') format('woff');
+			font-weight: normal;
+			font-style: normal;
+		}
+		.modalpayment_dskapi {
+			display: none;
+			position: fixed;
+			z-index: 4000000;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			overflow: auto;
+			background-color: rgb(0, 0, 0);
+			background-color: rgba(0, 0, 0, 0.4);
+			padding-top: 20px;
+		}
+		.modalpayment-content_dskapi {
+			position: relative;
+			margin: auto;
+			padding: 0;
+			max-width: 1100px;
+			border-radius: 14.5px;
+		}
+		.dskapi_body {
+			padding: 0px;
+			height: 100%;
+		}
+		.dskapi_PopUp_Detailed_v1 {
+			border-radius: 14.5px;
+			width: 1100px;
+			background-color: #ffffff;
+			overflow: none;
+			margin: auto;
+		}
+		.dskapim_PopUp_Detailed_v1 {
+			border-radius: 14.5px;
+			width: 100%;
+			height: 100%;
+			background-color: #ffffff;
+			overflow: none;
+		}
+		.dskapi_Mask {
+			display: flex;
+			flex-direction: column;
+			border-radius: 14.5px;
+			background-color: #ffffff;
+			-webkit-box-shadow: 0px 0px 30px 0px #000000;
+			box-shadow: 0px 0px 30px 0px #000000;
+		}
+		.dskapim_Mask {
+			display: flex;
+			flex-direction: column;
+			border-radius: 14.5px;
+			background-color: #ffffff;
+			-webkit-box-shadow: 0px 0px 30px 0px #000000;
+			box-shadow: 0px 0px 30px 0px #000000;
+		}
+		.dskapi_header {
+			width: 100%;
+			margin: 0 0 7.7px;
+			border-radius: 14.5px 14.5px 0px 0px;
+			object-fit: contain;
+		}
+		p.dskapi_product_name {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			padding: 15px 57px 30px 57px;
+			margin: 0px;
+			font-family: squad-bold;
+			font-size: 24px;
+			line-height: 24px;
+			color: #006648;
+			text-align: center;
+		}
+		p.dskapim_product_name {
+			padding: 15px 17px 30px 17px;
+			margin: 0px;
+			font-family: squad-bold;
+			font-size: 24px;
+			line-height: 24px;
+			text-align: left;
+			color: #006648;
+			background-color: white;
+			text-align: center;
+		}
+		.dskapi_body_panel_txt3 {
+			display: flex;
+			flex-direction: row;
+			height: 300px;
+			padding: 0px 15px 0px 15px;
+		}
+		.dskapi_body_panel_txt4 {
+			display: flex;
+			flex-direction: row;
+			font-size: 14px;
+			padding: 0px 15px 0px 15px;
+		}
+		.dskapim_body_panel_txt3 {
+			height: 660px;
+			display: flex;
+			flex-direction: column;
+			padding: 0px 15px 0px 15px;
+			font-family: squad-regular;
+			font-size: 18px;
+			line-height: 22px;
+			color: #414546;
+		}
+		.dskapim_body_panel_txt4 {
+			display: flex;
+			flex-direction: column;
+			padding: 0px 15px 0px 15px;
+			font-family: squad-regular;
+			font-size: 14px;
+			line-height: 16px;
+			color: #414546;
+		}
+		.dskapi_body_panel_txt3_left {
+			width: 45%;
+			font-family: squad-light;
+			font-size: 18px;
+			line-height: 22px;
+			color: #414546;
+			padding-right: 10px;
+		}
+		.dskapi_body_panel_txt3_left p {
+			font-size: 18px;
+		}
+		.dskapim_body_panel_txt3_left {
+			width: 100%;
+			font-family: squad-light;
+			font-size: 18px;
+			line-height: 22px;
+			color: #414546;
+			padding-right: 10px;
+		}
+		.dskapim_body_panel_txt3_left p {
+			font-size: 18px;
+		}
+		.dskapi_body_panel_txt3_right {
+			width: 55%;
+			font-family: squad-regular;
+			font-size: 18px;
+			line-height: 22px;
+			color: #414546;
+			padding-left: 10px;
+		}
+		.dskapim_body_panel_txt3_right {
+			width: 100%;
+			font-family: squad-regular;
+			font-size: 18px;
+			line-height: 22px;
+			color: #414546;
+			padding-left: 10px;
+		}
+		select.dskapi_txt_right {
+			font-family: squad-light;
+			font-size: 22px;
+			color: #414546;
+			border-left: 0px none white;
+			border-top: 0px none white;
+			border-right: 0px none white;
+			border-bottom: 1px solid #b0b0b0;
+			background-color: white;
+			width: 100%;
+		}
+		select.dskapi_txt_right:active,
+		select.dskapi_txt_right:focus {
+			font-family: squad-light;
+			font-size: 22px;
+			color: #414546;
+			border-left: 0px none white;
+			border-top: 0px none white;
+			border-right: 0px none white;
+			border-bottom: 1px solid #b0b0b0;
+			width: 100%;
+			outline: none;
+		}
+		.dskapi_sumi_panel {
+			display: flex;
+			flex-direction: row;
+			width: 100%;
+			height: 110px;
+			margin-top: 20px;
+			background-color: white;
+		}
+		.dskapim_sumi_panel {
+			display: flex;
+			flex-direction: column;
+			width: 100%;
+			height: 210px;
+			margin-top: 20px;
+			background-color: white;
+		}
+		.dskapi_kredit_panel {
+			display: flex;
+			flex-direction: column;
+			width: 50%;
+			height: 100%;
+			border-radius: 30px;
+			-webkit-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.3);
+			box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.3);
+			text-align: center;
+			user-select: none;
+			-moz-user-select: none;
+			-khtml-user-select: none;
+			-webkit-user-select: none;
+			-o-user-select: none;
+			margin-right: 10px;
+			background-color: white;
+		}
+		.dskapim_kredit_panel {
+			display: flex;
+			flex-direction: column;
+			width: 100%;
+			height: 100%;
+			border-radius: 30px;
+			-webkit-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.3);
+			box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.3);
+			text-align: center;
+			user-select: none;
+			-moz-user-select: none;
+			-khtml-user-select: none;
+			-webkit-user-select: none;
+			-o-user-select: none;
+			margin-right: 10px;
+			margin-bottom: 10px;
+			background-color: white;
+		}
+		.dskapi_sumi_txt {
+			display: flex;
+			height: 30px;
+			font-family: squad-light;
+			font-size: 13px;
+			color: #414546;
+			align-items: center;
+			justify-content: center;
+		}
+		input[type='text'].dskapi_mesecna_price {
+			border: 0px none white;
+			background-color: white;
+			padding: 0px;
+			pointer-events: none;
+			width: 80%;
+			height: 100%;
+			font-family: squad-regular;
+			font-size: 36px;
+			color: #414546;
+			text-align: center;
+			box-shadow: none;
+		}
+		.dskapi_btn_cancel {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 48px;
+			background-color: #9c9c9c;
+			border-radius: 24px;
+			font-family: squad-bold;
+			font-size: 18px;
+			line-height: 24px;
+			margin-left: 5px;
+			padding: 0px 20px;
+			color: #006648;
+			cursor: pointer;
+			-webkit-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.4);
+			box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.4);
+			user-select: none;
+			-moz-user-select: none;
+			-khtml-user-select: none;
+			-webkit-user-select: none;
+			-o-user-select: none;
+		}
+		.dskapi_btn_cancel:hover {
+			color: white;
+		}
+		.dskapi_body_panel_footer {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			width: 100%;
+			padding: 20px 15px;
+			background-color: #006648;
+			border-radius: 0px 0px 14.5px 14.5px;
+		}
+		.dskapim_body_panel_footer {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			width: 100%;
+			padding: 20px 15px;
+			background-color: #006648;
+			border-radius: 0px 0px 14.5px 14.5px;
+		}
+		.dskapi_body_panel_left {
+			flex: 1;
+			height: 100%;
+			text-align: left;
+		}
+		.dskapim_body_panel_left {
+			width: 100%;
+			height: 100%;
+			text-align: left;
+		}
+		.dskapi_txt_footer {
+			padding-left: 57px;
+			padding-right: 10px;
+			font-family: squad-light;
+			color: #52ae30;
+			font-weight: 100;
+			font-size: 16px;
+			font-stretch: normal;
+			font-style: normal;
+			line-height: normal;
+			letter-spacing: normal;
+			text-align: right;
+		}
+	</style>
 	<p>
 		С избора си да финансирате покупката чрез Банка ДСК Вие декларирате, че сте запознат с Информацията относно
 		обработването на лични данни на физически лица от Банка ДСК АД.
@@ -155,4 +492,185 @@
 			</div>
 		</div>
 	</div>
+	
+	<script type="text/javascript">
+		(function() {
+			'use strict';
+			
+			let old_vnoski_checkout;
+			
+			// Create CORS request
+			function createCORSRequest(method, url) {
+				var xhr = new XMLHttpRequest();
+				if ('withCredentials' in xhr) {
+					xhr.open(method, url, true);
+				} else if (typeof XDomainRequest != 'undefined') {
+					xhr = new XDomainRequest();
+					xhr.open(method, url);
+				} else {
+					xhr = null;
+				}
+				return xhr;
+			}
+			
+			// Store previous installments value (for onfocus attribute)
+			// Only updates local variable, no interference with OpenCart
+			window.dskapi_pogasitelni_vnoski_input_focus_checkout = function(_old_vnoski) {
+				old_vnoski_checkout = _old_vnoski;
+			};
+			
+			// Update installments when changed (for onchange attribute)
+			// Only updates fields in popup, no interference with OpenCart price updates
+			window.dskapi_pogasitelni_vnoski_input_change_checkout = function() {
+				const installmentsInput = document.getElementById('dskapi_pogasitelni_vnoski_input_checkout');
+				if (!installmentsInput) {
+					return;
+				}
+				
+				const dskapi_vnoski = parseFloat(installmentsInput.value);
+				const dskapi_price = parseFloat(document.getElementById('dskapi_price_txt_checkout').value);
+				const dskapi_cid = document.getElementById('dskapi_cid_checkout').value;
+				const DSKAPI_LIVEURL = document.getElementById('DSKAPI_LIVEURL_checkout').value;
+				const dskapi_product_id = document.getElementById('dskapi_product_id_checkout').value;
+				
+				var xmlhttpro = createCORSRequest(
+					'GET',
+					DSKAPI_LIVEURL +
+					'/function/getproductcustom.php?cid=' +
+					dskapi_cid +
+					'&price=' +
+					dskapi_price +
+					'&product_id=' +
+					dskapi_product_id +
+					'&dskapi_vnoski=' +
+					dskapi_vnoski
+				);
+				
+				xmlhttpro.onreadystatechange = function() {
+					if (this.readyState == 4) {
+						var responseData;
+						try {
+							responseData = JSON.parse(this.response);
+						} catch (e) {
+							console.error('Error parsing response:', e);
+							return;
+						}
+						
+						var options = responseData.dsk_options;
+						var dsk_vnoska = parseFloat(responseData.dsk_vnoska);
+						var dsk_gpr = parseFloat(responseData.dsk_gpr);
+						var dsk_is_visible = responseData.dsk_is_visible;
+						
+						if (dsk_is_visible) {
+							if (options) {
+								// Update ONLY fields in popup - no interference with OpenCart
+								const dskapi_vnoska_input = document.getElementById('dskapi_vnoska_checkout');
+								const dskapi_gpr = document.getElementById('dskapi_gpr_checkout');
+								const dskapi_obshtozaplashtane_input = document.getElementById('dskapi_obshtozaplashtane_checkout');
+								const dskapi_price_txt_display = document.getElementById('dskapi_price_txt_checkout_display');
+								
+								if (dskapi_vnoska_input) {
+									dskapi_vnoska_input.value = dsk_vnoska.toFixed(2);
+								}
+								if (dskapi_gpr) {
+									dskapi_gpr.value = dsk_gpr.toFixed(2);
+								}
+								if (dskapi_obshtozaplashtane_input) {
+									dskapi_obshtozaplashtane_input.value = (dsk_vnoska * dskapi_vnoski).toFixed(2);
+								}
+								if (dskapi_price_txt_display) {
+									dskapi_price_txt_display.value = dskapi_price.toFixed(2);
+								}
+								
+								old_vnoski_checkout = dskapi_vnoski;
+							} else {
+								alert('The selected number of installments is below the minimum.');
+								if (installmentsInput) {
+									installmentsInput.value = old_vnoski_checkout;
+								}
+							}
+						} else {
+							alert('The selected number of installments is above the maximum.');
+							if (installmentsInput) {
+								installmentsInput.value = old_vnoski_checkout;
+							}
+						}
+					}
+				};
+				
+				xmlhttpro.send();
+			};
+			
+			function closePopup(popupContainer) {
+				if (popupContainer) {
+					popupContainer.style.display = 'none';
+					document.body.style.overflow = '';
+				}
+			}
+			
+			function openPopup(popupContainer) {
+				if (popupContainer) {
+					popupContainer.style.display = 'block';
+					document.body.style.overflow = 'hidden';
+				}
+			}
+			
+			// Initialize popup functionality
+			function initPopup() {
+				const popupContainer = document.getElementById('dskapi-interest-schemes-popup');
+				const openLink = document.getElementById('dskapi-interest-schemes-link');
+				const installmentsInput = document.getElementById('dskapi_pogasitelni_vnoski_input_checkout');
+				
+				if (!popupContainer || !openLink) {
+					setTimeout(initPopup, 100);
+					return;
+				}
+				
+				// Initialize old value
+				if (installmentsInput) {
+					old_vnoski_checkout = parseFloat(installmentsInput.value);
+				}
+				
+				// Open popup on link click
+				openLink.addEventListener('click', function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					const currentPopup = document.getElementById('dskapi-interest-schemes-popup');
+					if (currentPopup) {
+						openPopup(currentPopup);
+					}
+				}, false);
+				
+				// Close popup on button click
+				document.addEventListener('click', function(e) {
+					if (e.target && e.target.id === 'dskapi-interest-schemes-close') {
+						e.preventDefault();
+						e.stopPropagation();
+						const currentPopup = document.getElementById('dskapi-interest-schemes-popup');
+						closePopup(currentPopup);
+					}
+				}, false);
+				
+				// Close popup on click outside content
+				popupContainer.addEventListener('click', function(e) {
+					if (e.target === popupContainer) {
+						closePopup(popupContainer);
+					}
+				}, false);
+				
+				// Close popup on ESC key press
+				document.addEventListener('keydown', function(e) {
+					if (e.key === 'Escape') {
+						const currentPopup = document.getElementById('dskapi-interest-schemes-popup');
+						if (currentPopup && currentPopup.style.display !== 'none') {
+							closePopup(currentPopup);
+						}
+					}
+				}, false);
+			}
+			
+			// Initialize after DOM is ready
+			setTimeout(initPopup, 100);
+		})();
+	</script>
 {% endif %}
