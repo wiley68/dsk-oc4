@@ -288,7 +288,7 @@ class MtDskapiCreditCheckout extends \Opencart\System\Engine\Controller
     // Function for automatically selecting dskapi radio button in popup (without automatic submission)
     function selectDskapiRadio() {
         try {
-            const dskapiRadio = document.querySelector(\'input[name="payment_method"][value="dskapi.dskapi"]\');
+            const dskapiRadio = document.querySelector('input[name="payment_method"][value="dskapi.dskapi"]');
             if (dskapiRadio && !dskapiRadio.checked) {
                 dskapiRadio.checked = true;
                 return true;

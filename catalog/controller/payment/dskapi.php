@@ -199,12 +199,7 @@ class Dskapi extends \Opencart\System\Engine\Controller
         // Set gap setting for popup positioning
         $data['dskapi_gap_popup'] = $this->config->get($this->module . '_gap_popup') ?? 0;
 
-        // Load module version from install.json
-        $installInfo = json_decode(
-            file_get_contents(DIR_EXTENSION . 'mt_dskapi_credit/install.json'),
-            true
-        );
-        $data['DSKAPI_VERSION'] = $installInfo['version'] ?? '';
+        $data['DSKAPI_VERSION'] = $dskapi_version;
 
         return $this->load->view('extension/mt_dskapi_credit/payment/dskapi', $data);
     }
