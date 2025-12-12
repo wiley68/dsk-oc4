@@ -104,6 +104,7 @@ class Dskapi extends \Opencart\System\Engine\Controller
         // Prepare data for popup (same as in cart page)
         $dskapiLiveUrl = $this->dskapiLiveUrl ?: (string) $this->config->get('dskapi_liveurl');
         $dskapi_currency_code = $this->session->data['currency'] ?? $this->config->get('config_currency');
+        $dskapi_product_id = $this->resolveCartProductId();
 
         // Determine currency sign
         $dskapi_sign = 'лв.';
@@ -129,9 +130,10 @@ class Dskapi extends \Opencart\System\Engine\Controller
         $data['dskapi_sign'] = $dskapi_sign;
         $data['dskapi_eur'] = $paramsdskapieur !== null ? (int) $paramsdskapieur['dsk_eur'] : 0;
         $data['dskapi_currency_code'] = $dskapi_currency_code;
+        $data['dskapi_product_id'] = $dskapi_product_id;
 
         // Load data for popup
-        $paramsdskapi = $this->makeApiRequest('/function/getproduct.php?cid=' . urlencode($dskapi_cid) . '&price=' . urlencode($dskapi_price) . '&product_id=0');
+        $paramsdskapi = $this->makeApiRequest('/function/getproduct.php?cid=' . urlencode($dskapi_cid) . '&price=' . urlencode($dskapi_price) . '&product_id=' . urlencode($dskapi_product_id));
 
         if ($paramsdskapi) {
             // Extract installment and payment data from API response
@@ -348,6 +350,36 @@ class Dskapi extends \Opencart\System\Engine\Controller
         }
 
         return $decoded;
+    }
+
+    /**
+     * Определя product_id на количката. Ако има само един продукт, връща неговото ID, иначе 0.
+     *
+     * @return int
+     */
+    private function resolveCartProductId(): int
+    {
+        $products = $this->cart->getProducts();
+
+        if (empty($products)) {
+            return 0;
+        }
+
+        $productIds = [];
+
+        foreach ($products as $product) {
+            if (!isset($product['product_id'])) {
+                continue;
+            }
+
+            $productIds[(int) $product['product_id']] = true;
+        }
+
+        if (count($productIds) === 1) {
+            return (int) array_key_first($productIds);
+        }
+
+        return 0;
     }
 
     /**

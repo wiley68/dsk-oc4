@@ -406,13 +406,13 @@
 	<!-- Скрити полета за JavaScript функционалността -->
 	<input type="hidden" id="dskapi_price_txt_checkout" value="{{dskapi_price}}"/>
 	<input type="hidden" id="dskapi_cid_checkout" value="{{dskapi_cid}}"/>
-	<input type="hidden" id="dskapi_product_id_checkout" value="0"/>
+	<input type="hidden" id="dskapi_product_id_checkout" value="{{dskapi_product_id}}"/>
 	<input type="hidden" id="DSKAPI_LIVEURL_checkout" value="{{DSKAPI_LIVEURL}}"/>
 	<input type="hidden" id="dskapi_eur_checkout" value="{{dskapi_eur}}"/>
 	<input type="hidden" id="dskapi_currency_code_checkout" value="{{dskapi_currency_code}}"/>
 	
 	<!-- Попъп прозорец за лихвени схеми -->
-	<div id="dskapi-interest-schemes-popup" class="modalpayment_dskapi" style="display:none;padding-top:{{ dskapi_gap_popup }}px !important;">
+	<div id="dskapi-interest-schemes-popup" class="modalpayment_dskapi" data-gap="{{ dskapi_gap_popup }}">
 		<div class="modalpayment-content_dskapi">
 			<div id="dskapi_body">
 				<div class="{{dskapi_PopUp_Detailed_v1}}">
@@ -496,6 +496,14 @@
 	<script type="text/javascript">
 		(function() {
 			'use strict';
+			
+			const popup = document.getElementById('dskapi-interest-schemes-popup');
+			if (popup) {
+				const gap = parseFloat(popup.getAttribute('data-gap'));
+				if (!Number.isNaN(gap)) {
+					popup.style.paddingTop = gap + 'px';
+				}
+			}
 			
 			let old_vnoski_checkout;
 			
