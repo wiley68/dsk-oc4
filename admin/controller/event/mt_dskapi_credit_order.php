@@ -68,15 +68,14 @@ class MtDskapiCreditOrder extends \Opencart\System\Engine\Controller
             $bankStatus = $this->model_extension_mt_dskapi_credit_module_mt_dskapi_credit->getBankStatus($order_id);
             $statuses = $this->model_extension_mt_dskapi_credit_module_mt_dskapi_credit->getBankStatuses();
 
+            // Запазваме информацията в регистъра само ако има статус (Registry приема само обекти)
             if ($bankStatus) {
-                $data['dskapi_bank_status'] = [
+                $this->registry->set('dskapi_bank_status_info', (object) [
                     'status_id' => (int)$bankStatus['order_status'],
                     'status_text' => $statuses[(int)$bankStatus['order_status']] ?? 'Неизвестен статус',
                     'created_at' => $bankStatus['created_at'],
                     'updated_at' => $bankStatus['updated_at']
-                ];
-            } else {
-                $data['dskapi_bank_status'] = null;
+                ]);
             }
         }
     }
